@@ -13,8 +13,11 @@
 
     /* Login Card */
     .auth-card { background: white; padding: 25px; border-radius: 12px; max-width: 450px; margin: 40px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; }
-    .auth-card input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+    .auth-card input { width: 100%; padding: 12px; margin: 15px 0 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
     .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+
+    /* Instructions box */
+    .info-box { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 15px; text-align: left; font-size: 13px; color: #4a5568; line-height: 1.6; }
 
     /* Top bar info */
     .user-profile { font-size: 14px; background: #e8f0fe; padding: 6px 12px; border-radius: 20px; border: 1px solid #cce0ff; display: inline-flex; gap: 8px; align-items: center; }
@@ -46,7 +49,7 @@
     .qty-controls { display: flex; align-items: center; gap: 6px; }
     .qty-controls button { width: 26px; height: 26px; border-radius: 4px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-weight: bold; }
     
-    /* History Drawer / Modal */
+    /* History Drawer */
     .history-box { margin-top: 30px; background: white; border-radius: 10px; padding: 15px; border: 1px solid #eee; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th, td { border-bottom: 1px solid #f0f0f0; padding: 8px; text-align: left; }
@@ -55,17 +58,17 @@
 </head>
 <body>
 
-<!-- จอที่ 1: ตรวจสอบรหัสพนักงานก่อนเริ่มช้อป -->
+  <!-- จอที่ 1: ตรวจสอบรหัสพนักงานก่อนเริ่มช้อป -->
   <div class="container" id="loginScreen">
     <div class="auth-card">
       <h2>🦺 เบิกจ่ายอุปกรณ์ PPE</h2>
       <p style="color:#666; font-size: 14px; margin-top: 6px;">กรุณาระบุรหัสพนักงานเพื่อเริ่มการเบิกอุปกรณ์</p>
       
-      <!-- เปลี่ยน Placeholder ในช่องกรอก -->
+      <!-- ช่องกรอกรหัสพนักงาน -->
       <input type="text" id="empIdInput" placeholder="พิมพ์รหัสพนักงานของท่าน">
 
-      <!-- เพิ่มกล่องคำอธิบายเพิ่มเติม -->
-      <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 10px; margin: 12px 0 15px 0; text-align: left; font-size: 13px; color: #555; line-height: 1.6;">
+      <!-- กล่องคำอธิบายเพิ่มเติม -->
+      <div class="info-box">
         <div>🔹 <b>พนักงาน TTT:</b> กรอกรหัสพนักงาน</div>
         <div>🔹 <b>Contract out:</b> <code>TTT-</code> ตามด้วยรหัสพนักงาน (เช่น TTT-1001)</div>
       </div>
@@ -86,15 +89,12 @@
     </header>
 
     <div class="container">
-      <!-- ตัวกรองหมวดหมู่ -->
       <div class="filter-bar" id="categoryBar">
         <button class="filter-btn active" onclick="filterCategory('All')">ทั้งหมด</button>
       </div>
 
-      <!-- รายการสินค้า -->
       <div class="catalog-grid" id="catalogGrid"></div>
 
-      <!-- ประวัติการเบิกของพนักงาน -->
       <div class="history-box">
         <h4>📋 ประวัติการเบิกอุปกรณ์ของคุณ</h4>
         <div style="overflow-x: auto; margin-top: 10px;">
@@ -112,7 +112,6 @@
       </div>
     </div>
 
-    <!-- แถบตะกร้าลอยด้านล่าง -->
     <div class="cart-footer">
       <div>
         <span style="font-size: 13px; color: #666;">รายการในตะกร้า:</span>
@@ -124,7 +123,7 @@
     </div>
   </div>
 
-  <!-- Modal หน้าต่างดูตะกร้าสินค้าและกดยืนยัน -->
+  <!-- Modal หน้าต่างดูตะกร้าสินค้า -->
   <div class="modal" id="cartModal">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -144,13 +143,12 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
     let ppeItems = [];
     let currentEmployee = null;
-    let cart = []; // เก็บ { id, name, unit, qty }
+    let cart = [];
 
-    // ฟังก์ชันเข้าสู่ระบบ
     function loginEmployee() {
       const empId = document.getElementById('empIdInput').value.trim();
       const msg = document.getElementById('loginMsg');
-      if (!empId) { msg.innerText = "กรุณาระบุรหัสพนักงาน"; return; }
+      if (!empId) { msg.innerText = "กรุณาระบุรหัสพนักงานของท่าน"; return; }
 
       msg.style.color = "#007bff";
       msg.innerText = "กำลังเข้าสู่ระบบ...";
@@ -170,7 +168,7 @@
             loadCatalog();
           } else {
             msg.style.color = "red";
-            msg.innerText = res.message || "ไม่พบรหัสพนักงานนี้";
+            msg.innerText = res.message || "ไม่พบรหัสพนักงานนี้ในระบบ";
           }
         })
         .catch(() => {
@@ -188,7 +186,6 @@
       document.getElementById('empIdInput').value = '';
     }
 
-    // โหลด Catalog PPE
     function loadCatalog() {
       fetch(`${API_URL}?action=getPPE`)
         .then(res => res.json())
@@ -243,7 +240,6 @@
       });
     }
 
-    // ระบบตะกร้าสินค้า
     function addToCart(itemId) {
       const item = ppeItems.find(p => String(p.id) === String(itemId));
       const existing = cart.find(c => String(c.id) === String(itemId));
@@ -296,7 +292,6 @@
       document.getElementById('cartModal').style.display = 'none';
     }
 
-    // กดยืนยันเบิกของจากตะกร้า
     function checkout() {
       if (cart.length === 0) { alert("ไม่มีรายการในตะกร้า"); return; }
       const btn = document.getElementById('btnCheckout');
@@ -324,7 +319,6 @@
           cart = [];
           updateCartUI();
           closeCartModal();
-          // รีเฟรชประวัติ
           fetch(`${API_URL}?action=getEmployeeData&empId=${encodeURIComponent(currentEmployee.empId)}`)
             .then(r => r.json()).then(r => renderHistory(r.history));
         } else {
