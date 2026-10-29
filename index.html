@@ -3,65 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PPE Stock Control</title>
+  <title>ระบบเบิกอุปกรณ์ PPE</title>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background: #f4f6f8; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 650px; margin: 0 auto 20px auto; }
-    h2, h3 { color: #333; margin-top: 0; }
-    label { font-weight: bold; display: block; margin-top: 10px; }
-    input, select, button { padding: 10px; margin-top: 5px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-    button { background: #007bff; color: white; border: none; font-size: 16px; margin-top: 15px; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    th { background: #e9ecef; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f0f2f5; }
+    .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); max-width: 500px; margin: 0 auto; }
+    h2 { color: #1a73e8; text-align: center; margin-top: 0; }
+    label { font-weight: 600; display: block; margin-top: 15px; color: #333; }
+    input, select, button { padding: 12px; margin-top: 6px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
+    button { background: #28a745; color: white; border: none; font-weight: bold; margin-top: 20px; cursor: pointer; transition: 0.2s; }
+    button:hover { background: #218838; }
+    .footer-link { text-align: center; margin-top: 20px; font-size: 13px; }
+    .footer-link a { color: #888; text-decoration: none; }
+    .alert { padding: 10px; border-radius: 6px; margin-top: 15px; display: none; text-align: center; font-weight: bold; }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>บันทึก รับเข้า / เบิกออก อุปกรณ์ PPE</h2>
-    <form id="stockForm">
-      <label>รายการ PPE:</label>
+    <h2>🦺 ฟอร์มเบิกอุปกรณ์ PPE</h2>
+    <div id="alertBox" class="alert"></div>
+    <form id="requestForm">
+      <label>รหัสพนักงาน / ชื่อ-นามสกุล:</label>
+      <input type="text" id="empName" required placeholder="เช่น สมชาย ใจดี (ID: 1024)">
+
+      <label>แผนก / หน้างาน:</label>
+      <input type="text" id="department" required placeholder="เช่น ซ่อมบำรุง / Site A">
+
+      <label>รายการ PPE ที่ต้องการเบิก:</label>
       <select id="item" required>
         <option value="หมวกนิรภัย (Safety Helmet)">หมวกนิรภัย (Safety Helmet)</option>
         <option value="แว่นตานิรภัย (Safety Glasses)">แว่นตานิรภัย (Safety Glasses)</option>
-        <option value="ถุงมือกันบาด (Cut-resistant Gloves)">ถุงมือกันบาด (Cut-resistant Gloves)</option>
+        <option value="ถุงมือกันบาด (Cut Gloves)">ถุงมือกันบาด (Cut Gloves)</option>
         <option value="รองเท้าเซฟตี้ (Safety Shoes)">รองเท้าเซฟตี้ (Safety Shoes)</option>
         <option value="ที่อุดหู (Earplugs)">ที่อุดหู (Earplugs)</option>
       </select>
 
-      <label>ประเภทรายการ:</label>
-      <select id="type">
-        <option value="IN">รับเข้า (Stock In)</option>
-        <option value="OUT">เบิกออก (Stock Out)</option>
-      </select>
-
-      <label>จำนวน (ชิ้น/คู่):</label>
+      <label>จำนวนที่ขอเบิก (ชิ้น/คู่):</label>
       <input type="number" id="qty" min="1" required placeholder="ระบุจำนวน">
 
-      <label>ชื่อผู้ทำรายการ / แผนก:</label>
-      <input type="text" id="user" required placeholder="เช่น สมชาย - ซ่อมบำรุง">
-
-      <button type="submit">บันทึกข้อมูล</button>
+      <button type="submit">ส่งคำขอเบิกอุปกรณ์</button>
     </form>
+    
+    <div class="footer-link">
+      <a href="admin.html">🔐 สำหรับผู้ดูแลระบบ (Admin)</a>
+    </div>
   </div>
 
-  <div class="card">
-    <h3>ประวัติการทำรายการ</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>วัน-เวลา</th>
-          <th>อุปกรณ์</th>
-          <th>ประเภท</th>
-          <th>จำนวน</th>
-          <th>ผู้ทำรายการ</th>
-        </tr>
-      </thead>
-      <tbody id="logTableBody"></tbody>
-    </table>
-  </div>
+  <script>
+    const form = document.getElementById('requestForm');
+    const alertBox = document.getElementById('alertBox');
 
-  <script src="app.js"></script>
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      
+      const newLog = {
+        date: new Date().toLocaleString('th-TH'),
+        item: document.getElementById('item').value,
+        type: 'OUT', // เบิกออกเสมอ
+        qty: parseInt(document.getElementById('qty').value),
+        user: `${document.getElementById('empName').value} (${document.getElementById('department').value})`
+      };
+
+      let logs = JSON.parse(localStorage.getItem('ppe_logs')) || [];
+      logs.push(newLog);
+      localStorage.setItem('ppe_logs', JSON.stringify(logs));
+
+      // แจ้งเตือนส่งสำเร็จ
+      alertBox.style.display = 'block';
+      alertBox.style.background = '#d4edda';
+      alertBox.style.color = '#155724';
+      alertBox.innerText = '✅ บันทึกคำขอเบิกเรียบร้อยแล้ว';
+      
+      form.reset();
+      setTimeout(() => { alertBox.style.display = 'none'; }, 3000);
+    });
+  </script>
 </body>
 </html>
