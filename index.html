@@ -55,12 +55,21 @@
 </head>
 <body>
 
-  <!-- จอที่ 1: ตรวจสอบรหัสพนักงานก่อนเริ่มช้อป -->
+<!-- จอที่ 1: ตรวจสอบรหัสพนักงานก่อนเริ่มช้อป -->
   <div class="container" id="loginScreen">
     <div class="auth-card">
       <h2>🦺 เบิกจ่ายอุปกรณ์ PPE</h2>
       <p style="color:#666; font-size: 14px; margin-top: 6px;">กรุณาระบุรหัสพนักงานเพื่อเริ่มการเบิกอุปกรณ์</p>
-      <input type="text" id="empIdInput" placeholder="พิมพ์รหัสพนักงาน (เช่น 1001)">
+      
+      <!-- เปลี่ยน Placeholder ในช่องกรอก -->
+      <input type="text" id="empIdInput" placeholder="พิมพ์รหัสพนักงานของท่าน">
+
+      <!-- เพิ่มกล่องคำอธิบายเพิ่มเติม -->
+      <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 10px; margin: 12px 0 15px 0; text-align: left; font-size: 13px; color: #555; line-height: 1.6;">
+        <div>🔹 <b>พนักงาน TTT:</b> กรอกรหัสพนักงาน</div>
+        <div>🔹 <b>Contract out:</b> <code>TTT-</code> ตามด้วยรหัสพนักงาน (เช่น TTT-1001)</div>
+      </div>
+
       <button class="btn-login" onclick="loginEmployee()">เข้าสู่แคตตาล็อก</button>
       <div id="loginMsg" style="color:red; margin-top: 10px; font-size: 13px;"></div>
     </div>
