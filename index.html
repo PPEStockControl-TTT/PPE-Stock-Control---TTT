@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PPE Stock Control</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background: #f4f6f8; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 650px; margin: 0 auto 20px auto; }
+    h2, h3 { color: #333; margin-top: 0; }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    input, select, button { padding: 10px; margin-top: 5px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    button { background: #007bff; color: white; border: none; font-size: 16px; margin-top: 15px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background: #e9ecef; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>บันทึก รับเข้า / เบิกออก อุปกรณ์ PPE</h2>
+    <form id="stockForm">
+      <label>รายการ PPE:</label>
+      <select id="item" required>
+        <option value="หมวกนิรภัย (Safety Helmet)">หมวกนิรภัย (Safety Helmet)</option>
+        <option value="แว่นตานิรภัย (Safety Glasses)">แว่นตานิรภัย (Safety Glasses)</option>
+        <option value="ถุงมือกันบาด (Cut-resistant Gloves)">ถุงมือกันบาด (Cut-resistant Gloves)</option>
+        <option value="รองเท้าเซฟตี้ (Safety Shoes)">รองเท้าเซฟตี้ (Safety Shoes)</option>
+        <option value="ที่อุดหู (Earplugs)">ที่อุดหู (Earplugs)</option>
+      </select>
+
+      <label>ประเภทรายการ:</label>
+      <select id="type">
+        <option value="IN">รับเข้า (Stock In)</option>
+        <option value="OUT">เบิกออก (Stock Out)</option>
+      </select>
+
+      <label>จำนวน (ชิ้น/คู่):</label>
+      <input type="number" id="qty" min="1" required placeholder="ระบุจำนวน">
+
+      <label>ชื่อผู้ทำรายการ / แผนก:</label>
+      <input type="text" id="user" required placeholder="เช่น สมชาย - ซ่อมบำรุง">
+
+      <button type="submit">บันทึกข้อมูล</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>ประวัติการทำรายการ</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>วัน-เวลา</th>
+          <th>อุปกรณ์</th>
+          <th>ประเภท</th>
+          <th>จำนวน</th>
+          <th>ผู้ทำรายการ</th>
+        </tr>
+      </thead>
+      <tbody id="logTableBody"></tbody>
+    </table>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
