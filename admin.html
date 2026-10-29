@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - PPE Stock Control</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #eef2f5; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    h2, h3 { margin-top: 0; color: #2c3e50; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-top: 15px; }
+    .stock-box { background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 6px; text-align: center; }
+    .stock-box h4 { margin: 0 0 5px 0; font-size: 14px; color: #555; }
+    .stock-box .num { font-size: 24px; font-weight: bold; color: #007bff; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background: #e9ecef; }
+    input, select, button { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .danger-btn { background: #dc3545; }
+    .danger-btn:hover { background: #c82333; }
+    .badge-in { color: #28a745; font-weight: bold; }
+    .badge-out { color: #dc3545; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container" id="adminPanel" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h2>📊 ระบบควบคุมสต็อก PPE (Admin Only)</h2>
+      <a href="index.html" style="text-decoration: none; color: #007bff;">👈 ไปหน้าเบิกของ</a>
+    </div>
+
+    <!-- บล็อกแสดงสต็อกคงเหลือ -->
+    <div class="card">
+      <h3>📦 ยอดสต็อกคงเหลือปัจจุบัน</h3>
+      <div class="grid" id="stockOverview"></div>
+    </div>
+
+    <!-- บล็อกรับของเข้าสต็อก (Restock) -->
+    <div class="card">
+      <h3>➕ รับอุปกรณ์เข้าคลัง (Restock / คืนของ)</h3>
+      <form id="restockForm" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <select id="restockItem" required>
+          <option value="หมวกนิรภัย (Safety Helmet)">หมวกนิรภัย (Safety Helmet)</option>
+          <option value="แว่นตานิรภัย (Safety Glasses)">แว่นตานิรภัย (Safety Glasses)</option>
+          <option value="ถุงมือกันบาด (Cut Gloves)">ถุงมือกันบาด (Cut Gloves)</option>
+          <option value="รองเท้าเซฟตี้ (Safety Shoes)">รองเท้าเซฟตี้ (Safety Shoes)</option>
+          <option value="ที่อุดหู (Earplugs)">ที่อุดหู (Earplugs)</option>
+        </select>
+        <input type="number" id="restockQty" min="1" placeholder="จำนวน" required style="width: 120px;">
+        <input type="text" id="restockNote" placeholder="หมายเหตุ / เลข PO" style="flex: 1;">
+        <button type="submit">เพิ่มสต็อก</button>
+      </form>
+    </div>
+
+    <!-- บล็อกประวัติรายการทั้งหมด -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>📋 ประวัติการเบิก-จ่ายทั้งหมด</h3>
+        <button onclick="clearData()" class="danger-btn" style="font-size: 12px;">ล้างข้อมูลทั้งหมด</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>วัน-เวลา</th>
+            <th>อุปกรณ์</th>
+            <th>ประเภท</th>
+            <th>จำนวน</th>
+            <th>ผู้ทำรายการ / หมายเหตุ</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // รหัสผ่าน Admin (ตั้งค่าเริ่มต้นไว้ที่ 1234)
+    const ADMIN_PASSWORD = "1234";
+
+    const inputPass = prompt("กรุณากรอกรหัสผ่านสำหรับ Admin:");
+    if (inputPass === ADMIN_PASSWORD) {
+      document.getElementById('adminPanel').style.display = 'block';
+      loadDashboard();
+    } else {
+      alert("รหัสผ่านไม่ถูกต้อง!");
+      window.location.href = "index.html";
+    }
+
+    const ppeList = [
+      "หมวกนิรภัย (Safety Helmet)",
+      "แว่นตานิรภัย (Safety Glasses)",
+      "ถุงมือกันบาด (Cut Gloves)",
+      "รองเท้าเซฟตี้ (Safety Shoes)",
+      "ที่อุดหู (Earplugs)"
+    ];
+
+    function loadDashboard() {
+      const logs = JSON.parse(localStorage.getItem('ppe_logs')) || [];
+      
+      // คำนวณสต็อก
+      const stockBalance = {};
+      ppeList.forEach(item => stockBalance[item] = 0);
+
+      logs.forEach(log => {
+        if (stockBalance[log.item] !== undefined) {
+          if (log.type === 'IN') stockBalance[log.item] += Number(log.qty);
+          if (log.type === 'OUT') stockBalance[log.item] -= Number(log.qty);
+        }
+      });
+
+      // แสดงการ์ดสต็อก
+      const overviewDiv = document.getElementById('stockOverview');
+      overviewDiv.innerHTML = '';
+      ppeList.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'stock-box';
+        const qty = stockBalance[item];
+        div.innerHTML = `
+          <h4>${item}</h4>
+          <div class="num" style="color: ${qty < 5 ? '#dc3545' : '#007bff'}">${qty}</div>
+        `;
+        overviewDiv.appendChild(div);
+      });
+
+      // แสดงตารางประวัติ
+      const tableBody = document.getElementById('logTableBody');
+      tableBody.innerHTML = '';
+      logs.slice().reverse().forEach(log => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${log.date}</td>
+          <td>${log.item}</td>
+          <td><span class="${log.type === 'IN' ? 'badge-in' : 'badge-out'}">${log.type === 'IN' ? 'รับเข้า' : 'เบิกออก'}</span></td>
+          <td>${log.qty}</td>
+          <td>${log.user}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // ฟังก์ชันรับของเข้า
+    document.getElementById('restockForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const logs = JSON.parse(localStorage.getItem('ppe_logs')) || [];
+      logs.push({
+        date: new Date().toLocaleString('th-TH'),
+        item: document.getElementById('restockItem').value,
+        type: 'IN',
+        qty: parseInt(document.getElementById('restockQty').value),
+        user: 'Admin Restock: ' + (document.getElementById('restockNote').value || 'รับของเข้าคลัง')
+      });
+      localStorage.setItem('ppe_logs', JSON.stringify(logs));
+      document.getElementById('restockForm').reset();
+      loadDashboard();
+    });
+
+    function clearData() {
+      if (confirm("คุณแน่ใจหรือไม่ที่จะล้างประวัติและสต็อกทั้งหมด?")) {
+        localStorage.removeItem('ppe_logs');
+        loadDashboard();
+      }
+    }
+  </script>
+</body>
+</html>
