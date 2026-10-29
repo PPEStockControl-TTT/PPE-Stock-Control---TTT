@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - รับอุปกรณ์ PPE เข้าคลัง</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f0f2f5; color: #333; }
+    .container { max-width: 650px; margin: 0 auto; }
+    .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    h2, h3 { margin-top: 0; color: #1a73e8; }
+    label { font-weight: 600; display: block; margin-top: 15px; font-size: 14px; }
+    input, select, button { padding: 12px; margin-top: 6px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    .btn-submit { background: #007bff; color: white; border: none; font-size: 16px; font-weight: bold; margin-top: 20px; cursor: pointer; transition: 0.2s; }
+    .btn-submit:hover { background: #0056b3; }
+    .btn-submit:disabled { background: #80bdff; cursor: not-allowed; }
+    .item-preview { display: flex; align-items: center; gap: 15px; background: #f8f9fa; border: 1px dashed #ccc; padding: 10px; border-radius: 6px; margin-top: 10px; }
+    .item-preview img { width: 70px; height: 70px; object-fit: contain; border-radius: 4px; background: white; border: 1px solid #eee; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    th, td { border: 1px solid #e0e0e0; padding: 9px; text-align: left; }
+    th { background: #f1f3f5; }
+    .alert { padding: 12px; border-radius: 6px; margin-top: 15px; display: none; text-align: center; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <!-- จอ Login Admin -->
+  <div class="container" id="loginBox">
+    <div class="card" style="text-align: center;">
+      <h2>🔐 ระบบรับเข้าคลัง (Admin Only)</h2>
+      <p style="color: #666; font-size: 14px;">กรุณากรอกรหัสผ่านเพื่อเข้าสู่ระบบรับของเข้าคลัง</p>
+      <input type="password" id="adminPass" placeholder="กรอกรหัสผ่าน Admin">
+      <button class="btn-submit" onclick="checkAuth()">เข้าสู่ระบบ</button>
+      <div id="authError" style="color: red; margin-top: 10px; display: none;">รหัสผ่านไม่ถูกต้อง!</div>
+    </div>
+  </div>
+
+  <!-- จอแบบฟอร์มรับของเข้า -->
+  <div class="container" id="restockPanel" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <a href="index.html" style="text-decoration: none; color: #007bff; font-weight: bold;">👈 ไปหน้าเบิกของพนักงาน</a>
+      <a href="admin.html" style="text-decoration: none; color: #555;">📊 ไปหน้าแดชบอร์ดสต็อก</a>
+    </div>
+
+    <div class="card">
+      <h2>📥 บันทึกรับอุปกรณ์ PPE เข้าคลัง (Stock In)</h2>
+      
+      <div id="alertBox" class="alert"></div>
+
+      <form id="restockForm" onsubmit="submitRestock(event)">
+        <label>1. เลือกอุปกรณ์ PPE ที่รับเข้า:</label>
+        <select id="itemSelect" required onchange="updatePreview()">
+          <option value="">-- กำลังดึงรายการ PPE --</option>
+        </select>
+
+        <div id="previewBox" class="item-preview" style="display: none;">
+          <img id="previewImg" src="" alt="PPE Preview">
+          <div>
+            <div id="previewName" style="font-weight: bold;">-</div>
+            <div style="font-size: 12px; color: #666;">หมวดหมู่: <span id="previewCat">-</span></div>
+            <div style="font-size: 12px; color: #666;">หน่วยนับ: <span id="previewUnit">-</span></div>
+          </div>
+        </div>
+
+        <label>2. จำนวนที่รับเข้าคลัง:</label>
+        <input type="number" id="qty" min="1" required placeholder="ระบุจำนวนที่รับเข้า เช่น 50">
+
+        <label>3. เลขที่ใบสั่งซื้อ (PO) / เลขที่บิลส่งของ / หมายเหตุ:</label>
+        <input type="text" id="note" placeholder="เช่น PO-690215 หรือ รับคืนจากไซต์ A">
+
+        <label>4. ชื่อผู้บันทึกรับของ:</label>
+        <input type="text" id="adminName" required placeholder="ระบุชื่อเจ้าหน้าที่คลัง">
+
+        <button type="submit" class="btn-submit" id="btnSubmit">💾 บันทึกรับเข้าสต็อก</button>
+      </form>
+    </div>
+
+    <!-- ประวัติรับเข้าล่าสุด -->
+    <div class="card">
+      <h3>📋 ประวัติการรับของเข้าล่าสุด</h3>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>วัน-เวลา</th>
+              <th>อุปกรณ์</th>
+              <th>จำนวนรับเข้า</th>
+              <th>PO / หมายเหตุ</th>
+            </tr>
+          </thead>
+          <tbody id="historyTbody">
+            <tr><td colspan="4" style="text-align: center; color: #888;">กำลังโหลดประวัติ...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ADMIN_PASS = "1234"; // รหัสผ่าน Admin
+    const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
+    let ppeList = [];
+
+    function checkAuth() {
+      const pass = document.getElementById('adminPass').value;
+      if (pass === ADMIN_PASS) {
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('restockPanel').style.display = 'block';
+        loadPPEList();
+        loadHistory();
+      } else {
+        document.getElementById('authError').style.display = 'block';
+      }
+    }
+
+    function loadPPEList() {
+      fetch(`${API_URL}?action=getPPE`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            ppeList = res.data;
+            const select = document.getElementById('itemSelect');
+            select.innerHTML = '<option value="">-- กรุณาเลือกรายการ PPE --</option>';
+            ppeList.forEach((item, index) => {
+              const opt = document.createElement('option');
+              opt.value = index;
+              opt.textContent = `[${item.category}] ${item.name}`;
+              select.appendChild(opt);
+            });
+          }
+        });
+    }
+
+    function updatePreview() {
+      const idx = document.getElementById('itemSelect').value;
+      const box = document.getElementById('previewBox');
+      if (idx === "") { box.style.display = 'none'; return; }
+
+      const item = ppeList[idx];
+      document.getElementById('previewName').innerText = item.name;
+      document.getElementById('previewCat').innerText = item.category;
+      document.getElementById('previewUnit').innerText = item.unit || 'ชิ้น';
+
+      const img = document.getElementById('previewImg');
+      if (item.imageId) {
+        img.src = `https://drive.google.com/thumbnail?id=${item.imageId}&sz=w200`;
+        img.style.display = 'block';
+      } else {
+        img.style.display = 'none';
+      }
+      box.style.display = 'flex';
+    }
+
+    function submitRestock(e) {
+      e.preventDefault();
+      const idx = document.getElementById('itemSelect').value;
+      const qty = document.getElementById('qty').value;
+      const note = document.getElementById('note').value;
+      const adminName = document.getElementById('adminName').value;
+      const btn = document.getElementById('btnSubmit');
+      const alertBox = document.getElementById('alertBox');
+
+      btn.disabled = true;
+      btn.innerText = "กำลังบันทึกข้อมูล...";
+
+      const payload = {
+        type: 'RESTOCK',
+        item: ppeList[idx].name,
+        qty: parseInt(qty),
+        note: note,
+        adminName: adminName
+      };
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerText = "💾 บันทึกรับเข้าสต็อก";
+
+        if (res.status === 'success') {
+          alertBox.style.display = 'block';
+          alertBox.style.background = '#d4edda';
+          alertBox.style.color = '#155724';
+          alertBox.innerText = `✅ บันทึกรับเข้า: ${ppeList[idx].name} จำนวน ${qty} สำเร็จ!`;
+
+          document.getElementById('qty').value = '';
+          document.getElementById('note').value = '';
+          loadHistory();
+
+          setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+        } else {
+          alert("เกิดข้อผิดพลาด: " + res.message);
+        }
+      })
+      .catch(() => {
+        btn.disabled = false;
+        btn.innerText = "💾 บันทึกรับเข้าสต็อก";
+        alert("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
+      });
+    }
+
+    function loadHistory() {
+      fetch(`${API_URL}?action=getRestockHistory`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            const tbody = document.getElementById('historyTbody');
+            tbody.innerHTML = '';
+            if (res.data.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">ยังไม่มีประวัติการรับเข้า</td></tr>';
+              return;
+            }
+            res.data.forEach(row => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${row.date}</td>
+                <td><b>${row.item}</b></td>
+                <td style="color: #28a745; font-weight: bold;">+${row.qty}</td>
+                <td>${row.note}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        });
+    }
+  </script>
+</body>
+</html>
