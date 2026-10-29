@@ -5,77 +5,242 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบเบิกอุปกรณ์ PPE</title>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f0f2f5; }
-    .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); max-width: 500px; margin: 0 auto; }
-    h2 { color: #1a73e8; text-align: center; margin-top: 0; }
-    label { font-weight: 600; display: block; margin-top: 15px; color: #333; }
-    input, select, button { padding: 12px; margin-top: 6px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
-    button { background: #28a745; color: white; border: none; font-weight: bold; margin-top: 20px; cursor: pointer; transition: 0.2s; }
-    button:hover { background: #218838; }
-    .footer-link { text-align: center; margin-top: 20px; font-size: 13px; }
-    .footer-link a { color: #888; text-decoration: none; }
-    .alert { padding: 10px; border-radius: 6px; margin-top: 15px; display: none; text-align: center; font-weight: bold; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 15px; background: #f4f6f9; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    h2, h3 { margin-top: 0; color: #1a73e8; }
+    label { font-weight: 600; display: block; margin-top: 12px; font-size: 14px; }
+    input, select, button { padding: 10px; margin-top: 5px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    .search-row { display: flex; gap: 8px; }
+    .search-row button { width: auto; background: #1a73e8; color: white; border: none; font-weight: bold; cursor: pointer; white-space: nowrap; margin-top: 5px; }
+    .btn-submit { background: #28a745; color: white; border: none; font-size: 16px; font-weight: bold; margin-top: 15px; cursor: pointer; padding: 12px; }
+    .btn-submit:hover { background: #218838; }
+    .btn-submit:disabled { background: #94d3a2; cursor: not-allowed; }
+    .item-preview { display: flex; align-items: center; gap: 15px; background: #f8f9fa; border: 1px dashed #ccc; padding: 10px; border-radius: 6px; margin-top: 10px; }
+    .item-preview img { width: 70px; height: 70px; object-fit: contain; border-radius: 4px; background: white; border: 1px solid #eee; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th, td { border: 1px solid #e0e0e0; padding: 8px; text-align: left; }
+    th { background: #f1f3f5; }
+    .alert { padding: 10px; border-radius: 6px; margin-top: 12px; display: none; font-weight: bold; text-align: center; font-size: 14px; }
+    .loading { display: none; text-align: center; color: #666; font-size: 13px; margin-top: 5px; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>🦺 ฟอร์มเบิกอุปกรณ์ PPE</h2>
-    <div id="alertBox" class="alert"></div>
-    <form id="requestForm">
-      <label>รหัสพนักงาน / ชื่อ-นามสกุล:</label>
-      <input type="text" id="empName" required placeholder="เช่น สมชาย ใจดี (ID: 1024)">
+  <div class="container">
+    <div class="card">
+      <h2>🦺 ระบบเบิกอุปกรณ์ PPE</h2>
 
-      <label>แผนก / หน้างาน:</label>
-      <input type="text" id="department" required placeholder="เช่น ซ่อมบำรุง / Site A">
+      <!-- ส่วนที่ 1: ตรวจสอบพนักงาน -->
+      <label>1. ระบุรหัสพนักงาน:</label>
+      <div class="search-row">
+        <input type="text" id="empId" placeholder="พิมพ์รหัสพนักงาน เช่น 1001" required>
+        <button type="button" id="btnSearch" onclick="searchEmployee()">ค้นหา</button>
+      </div>
+      <div id="empLoading" class="loading">🔍 กำลังตรวจสอบข้อมูลพนักงาน...</div>
 
-      <label>รายการ PPE ที่ต้องการเบิก:</label>
-      <select id="item" required>
-        <option value="หมวกนิรภัย (Safety Helmet)">หมวกนิรภัย (Safety Helmet)</option>
-        <option value="แว่นตานิรภัย (Safety Glasses)">แว่นตานิรภัย (Safety Glasses)</option>
-        <option value="ถุงมือกันบาด (Cut Gloves)">ถุงมือกันบาด (Cut Gloves)</option>
-        <option value="รองเท้าเซฟตี้ (Safety Shoes)">รองเท้าเซฟตี้ (Safety Shoes)</option>
-        <option value="ที่อุดหู (Earplugs)">ที่อุดหู (Earplugs)</option>
-      </select>
+      <div id="empInfo" style="display: none; margin-top: 15px; background: #e8f0fe; padding: 12px; border-radius: 6px;">
+        <div><b>ชื่อ-นามสกุล:</b> <span id="txtEmpName">-</span></div>
+        <div><b>แผนก:</b> <span id="txtEmpDept">-</span></div>
+      </div>
 
-      <label>จำนวนที่ขอเบิก (ชิ้น/คู่):</label>
-      <input type="number" id="qty" min="1" required placeholder="ระบุจำนวน">
+      <!-- ส่วนที่ 2: ฟอร์มเบิกอุปกรณ์ (จะปลดล็อกเมื่อพบรหัสพนักงาน) -->
+      <div id="formSection" style="display: none; margin-top: 20px;">
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <label>2. เลือกอุปกรณ์ PPE:</label>
+        <select id="itemSelect" onchange="updateItemPreview()">
+          <option value="">-- กำลังโหลดรายการ PPE --</option>
+        </select>
 
-      <button type="submit">ส่งคำขอเบิกอุปกรณ์</button>
-    </form>
-    
-    <div class="footer-link">
-      <a href="admin.html">🔐 สำหรับผู้ดูแลระบบ (Admin)</a>
+        <div id="itemPreviewBox" class="item-preview" style="display: none;">
+          <img id="itemImg" src="" alt="PPE Image">
+          <div>
+            <div id="itemDetailName" style="font-weight: bold; font-size: 14px;">-</div>
+            <div style="font-size: 12px; color: #666;">หมวดหมู่: <span id="itemDetailCat">-</span></div>
+            <div style="font-size: 12px; color: #666;">หน่วย: <span id="itemDetailUnit">-</span></div>
+          </div>
+        </div>
+
+        <label>3. จำนวนที่ต้องการเบิก:</label>
+        <input type="number" id="qty" min="1" value="1" required>
+
+        <div id="alertBox" class="alert"></div>
+        <button type="button" class="btn-submit" id="btnSubmit" onclick="submitRequest()">ยืนยันการเบิกอุปกรณ์</button>
+      </div>
+    </div>
+
+    <!-- ส่วนที่ 3: ตารางประวัติการเบิก -->
+    <div class="card" id="historyCard" style="display: none;">
+      <h3>📋 ประวัติการเบิกของคุณ</h3>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>วัน-เวลา</th>
+              <th>อุปกรณ์</th>
+              <th>จำนวน</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <script>
-    const form = document.getElementById('requestForm');
-    const alertBox = document.getElementById('alertBox');
+    const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
+    let ppeList = [];
+    let currentEmp = null;
 
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
+    // โหลดรายการ PPE ทันทีที่เปิดเว็บ
+    window.onload = function() {
+      fetch(`${API_URL}?action=getPPE`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            ppeList = res.data;
+            const select = document.getElementById('itemSelect');
+            select.innerHTML = '<option value="">-- กรุณาเลือกอุปกรณ์ --</option>';
+            ppeList.forEach((item, index) => {
+              const opt = document.createElement('option');
+              opt.value = index;
+              opt.textContent = `[${item.category}] ${item.name}`;
+              select.appendChild(opt);
+            });
+          }
+        })
+        .catch(err => console.error("โหลดรายการ PPE ไม่สำเร็จ:", err));
+    };
+
+    function updateItemPreview() {
+      const idx = document.getElementById('itemSelect').value;
+      const previewBox = document.getElementById('itemPreviewBox');
+      if (idx === "") {
+        previewBox.style.display = 'none';
+        return;
+      }
+      const item = ppeList[idx];
+      document.getElementById('itemDetailName').innerText = item.name;
+      document.getElementById('itemDetailCat').innerText = item.category;
+      document.getElementById('itemDetailUnit').innerText = item.unit || 'ชิ้น';
       
-      const newLog = {
-        date: new Date().toLocaleString('th-TH'),
-        item: document.getElementById('item').value,
-        type: 'OUT', // เบิกออกเสมอ
-        qty: parseInt(document.getElementById('qty').value),
-        user: `${document.getElementById('empName').value} (${document.getElementById('department').value})`
+      const img = document.getElementById('itemImg');
+      if (item.imageId) {
+        img.src = `https://drive.google.com/thumbnail?id=${item.imageId}&sz=w200`;
+        img.style.display = 'block';
+      } else {
+        img.style.display = 'none';
+      }
+      previewBox.style.display = 'flex';
+    }
+
+    function searchEmployee() {
+      const empId = document.getElementById('empId').value.trim();
+      if (!empId) {
+        alert("กรุณากรอกรหัสพนักงาน");
+        return;
+      }
+
+      document.getElementById('empLoading').style.display = 'block';
+      document.getElementById('empInfo').style.display = 'none';
+      document.getElementById('formSection').style.display = 'none';
+      document.getElementById('historyCard').style.display = 'none';
+
+      fetch(`${API_URL}?action=getEmployeeData&empId=${encodeURIComponent(empId)}`)
+        .then(res => res.json())
+        .then(res => {
+          document.getElementById('empLoading').style.display = 'none';
+          if (res.status === 'success') {
+            currentEmp = res.employee;
+            document.getElementById('txtEmpName').innerText = currentEmp.name;
+            document.getElementById('txtEmpDept').innerText = currentEmp.department;
+            document.getElementById('empInfo').style.display = 'block';
+            document.getElementById('formSection').style.display = 'block';
+
+            renderHistory(res.history);
+          } else {
+            alert(res.message || "ไม่พบรหัสพนักงาน");
+          }
+        })
+        .catch(err => {
+          document.getElementById('empLoading').style.display = 'none';
+          alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
+        });
+    }
+
+    function renderHistory(history) {
+      const tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+      if (!history || history.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">ยังไม่มีประวัติการเบิก</td></tr>';
+      } else {
+        history.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${row.timestamp}</td>
+            <td>${row.item}</td>
+            <td style="font-weight:bold; color:#dc3545;">-${row.qty}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      document.getElementById('historyCard').style.display = 'block';
+    }
+
+    function submitRequest() {
+      const itemIdx = document.getElementById('itemSelect').value;
+      const qty = document.getElementById('qty').value;
+      const btn = document.getElementById('btnSubmit');
+      const alertBox = document.getElementById('alertBox');
+
+      if (itemIdx === "") {
+        alert("กรุณาเลือกอุปกรณ์ PPE");
+        return;
+      }
+      if (!qty || qty < 1) {
+        alert("กรุณาระบุจำนวนที่ถูกต้อง");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "กำลังบันทึกข้อมูล...";
+
+      const payload = {
+        empId: currentEmp.empId,
+        name: currentEmp.name,
+        department: currentEmp.department,
+        item: ppeList[itemIdx].name,
+        qty: parseInt(qty)
       };
 
-      let logs = JSON.parse(localStorage.getItem('ppe_logs')) || [];
-      logs.push(newLog);
-      localStorage.setItem('ppe_logs', JSON.stringify(logs));
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerText = "ยืนยันการเบิกอุปกรณ์";
+        
+        if (res.status === 'success') {
+          alertBox.style.display = 'block';
+          alertBox.style.background = '#d4edda';
+          alertBox.style.color = '#155724';
+          alertBox.innerText = '✅ บันทึกการเบิกเรียบร้อยแล้ว';
 
-      // แจ้งเตือนส่งสำเร็จ
-      alertBox.style.display = 'block';
-      alertBox.style.background = '#d4edda';
-      alertBox.style.color = '#155724';
-      alertBox.innerText = '✅ บันทึกคำขอเบิกเรียบร้อยแล้ว';
-      
-      form.reset();
-      setTimeout(() => { alertBox.style.display = 'none'; }, 3000);
-    });
+          // โหลดประวัติใหม่
+          searchEmployee();
+          setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+        } else {
+          alert("เกิดข้อผิดพลาด: " + res.message);
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerText = "ยืนยันการเบิกอุปกรณ์";
+        alert("ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+      });
+    }
   </script>
 </body>
 </html>
