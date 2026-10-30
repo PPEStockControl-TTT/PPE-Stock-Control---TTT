@@ -3,145 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - รับอุปกรณ์เข้าคลังหลายรายการ</title>
+  <title>Admin - รับอุปกรณ์เข้าคลัง (Catalog Mode)</title>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f0f2f5; color: #333; }
-    .container { max-width: 850px; margin: 0 auto; }
-    .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
-    h2, h3 { margin-top: 0; color: #1a73e8; }
-    label { font-weight: 600; display: block; margin-top: 12px; font-size: 13px; color: #444; }
-    input, select, button { padding: 10px 12px; margin-top: 5px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-    
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f0f2f5; color: #333; padding-bottom: 120px; }
+    header { background: white; padding: 15px 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    h2, h3 { margin: 0; color: #1a73e8; }
+    .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+
+    /* Top Navigation Links */
+    .nav-links a { text-decoration: none; font-size: 14px; font-weight: bold; margin-left: 15px; }
+    .nav-links a.dash { color: #1a73e8; }
+    .nav-links a.user { color: #666; }
+
+    /* Form Info Card (PO & Admin Name) */
+    .info-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .add-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-top: 15px; }
-    
-    .btn-add { background: #17a2b8; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 15px; }
-    .btn-add:hover { background: #138496; }
-    
-    .btn-submit { background: #007bff; color: white; border: none; font-size: 16px; font-weight: bold; margin-top: 20px; cursor: pointer; padding: 14px; }
+    label { font-weight: 600; display: block; margin-bottom: 6px; font-size: 13px; color: #444; }
+    input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+
+    /* Catalog Grid */
+    .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; margin-top: 15px; }
+    .item-card { background: white; border-radius: 10px; border: 1px solid #e1e8ed; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: 0.2s; }
+    .item-card:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.08); }
+    .item-img { width: 100%; height: 160px; object-fit: contain; background: #fff; border-bottom: 1px solid #f0f0f0; }
+    .item-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .item-cat { font-size: 11px; color: #1a73e8; font-weight: bold; text-transform: uppercase; }
+    .item-name { font-size: 14px; font-weight: bold; margin: 6px 0 10px 0; line-height: 1.4; color: #2c3e50; }
+    .item-price { font-size: 13px; color: #28a745; font-weight: bold; margin-bottom: 12px; }
+
+    /* Counter Controls */
+    .qty-control { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px; }
+    .btn-qty { width: 34px; height: 34px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .btn-qty:hover { background: #e2e8f0; }
+    .qty-input { width: 60px; text-align: center; border: none; background: transparent; font-size: 16px; font-weight: bold; color: #1e293b; }
+    .qty-input:focus { outline: none; }
+
+    /* Sticky Bottom Checkout Bar */
+    .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 99; }
+    .bar-summary { display: flex; gap: 30px; align-items: center; }
+    .bar-item-count { font-size: 14px; color: #555; }
+    .bar-total { font-size: 22px; font-weight: bold; color: #0d47a1; }
+    .btn-submit { background: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; padding: 12px 28px; cursor: pointer; transition: 0.2s; }
     .btn-submit:hover { background: #0056b3; }
     .btn-submit:disabled { background: #80bdff; cursor: not-allowed; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-    th, td { border: 1px solid #e0e0e0; padding: 9px; text-align: left; }
-    th { background: #f1f3f5; }
-    .btn-del { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; width: auto; font-size: 12px; margin-top: 0; }
+    /* Login Modal */
+    .login-box { max-width: 400px; margin: 80px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
+    .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    .btn-login { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
     
-    .total-banner { background: #e8f4fd; border: 1px solid #b8daff; border-radius: 8px; padding: 15px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
-    .total-banner .amount { font-size: 22px; font-weight: bold; color: #0d47a1; }
-    
-    .alert { padding: 12px; border-radius: 6px; margin-top: 15px; display: none; text-align: center; font-weight: bold; }
+    .alert-box { padding: 12px; border-radius: 6px; margin-bottom: 15px; display: none; text-align: center; font-weight: bold; }
   </style>
 </head>
 <body>
 
   <!-- จอ Login Admin -->
-  <div class="container" id="loginBox">
-    <div class="card" style="text-align: center; max-width: 450px; margin: 60px auto;">
-      <h2>🔐 ระบบรับของเข้าคลัง (Admin)</h2>
-      <p style="color: #666; font-size: 14px;">กรุณากรอกรหัสผ่านเพื่อเข้าใช้งาน</p>
-      <input type="password" id="adminPass" placeholder="รหัสผ่าน Admin">
-      <button class="btn-submit" onclick="checkAuth()">เข้าสู่ระบบ</button>
-      <div id="authError" style="color: red; margin-top: 10px; display: none;">รหัสผ่านไม่ถูกต้อง!</div>
-    </div>
+  <div class="login-box" id="loginBox">
+    <h2>🔐 เข้าสู่ระบบรับของเข้าคลัง</h2>
+    <p style="color: #666; font-size: 14px;">กรุณากรอกรหัสผ่าน Admin</p>
+    <input type="password" id="adminPass" placeholder="รหัสผ่าน Admin">
+    <button class="btn-login" onclick="checkAuth()">เข้าสู่ระบบ</button>
+    <div id="authError" style="color: red; margin-top: 10px; display: none;">รหัสผ่านไม่ถูกต้อง!</div>
   </div>
 
-  <!-- จอแบบฟอร์มรับของเข้า -->
-  <div class="container" id="restockPanel" style="display: none;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <a href="index.html" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">📊 ไปหน้าแดชบอร์ดสต็อก</a>
-      <a href="../index.html" style="text-decoration: none; color: #666; font-size: 14px;">🦺 ไปหน้าเบิกของพนักงาน</a>
-    </div>
-
-    <div class="card">
-      <h2>📥 บันทึกรับอุปกรณ์ PPE เข้าคลัง (Stock In)</h2>
-      <div id="alertBox" class="alert"></div>
-
-      <!-- ส่วนที่ 1: ข้อมูลบิล (กรอกครั้งเดียว) -->
-      <div class="grid-2">
-        <div>
-          <label>1. เลขที่ PO / เลขที่บิลส่งของ / Invoice *</label>
-          <input type="text" id="poNumber" required placeholder="เช่น PO-690215 หรือ รับคืนจากไซต์ A">
-        </div>
-        <div>
-          <label>2. ชื่อผู้บันทึกรับของ *</label>
-          <input type="text" id="adminName" required placeholder="ระบุชื่อเจ้าหน้าที่คลัง">
-        </div>
+  <!-- จอ Catalog รับของเข้า -->
+  <div id="restockMain" style="display: none;">
+    <header>
+      <h2>📥 แคตตาล็อกรับของเข้าคลัง (Restock Catalog)</h2>
+      <div class="nav-links">
+        <a href="index.html" class="dash">📊 ไปหน้าแดชบอร์ดสต็อก</a>
+        <a href="../index.html" class="user">🦺 ไปหน้าเบิกของพนักงาน</a>
       </div>
+    </header>
 
-      <!-- ส่วนที่ 2: กล่องเลือกอุปกรณ์เพื่อเพิ่มลงบิล -->
-      <div class="add-box">
-        <h4 style="margin: 0 0 10px 0; color: #2c3e50;">➕ เพิ่มอุปกรณ์ลงในบิลนี้</h4>
+    <div class="container">
+      <div id="alertBox" class="alert-box"></div>
+
+      <!-- ข้อมูลบิล (กรอกครั้งเดียวด้านบน) -->
+      <div class="info-card">
         <div class="grid-2">
           <div>
-            <label>เลือกอุปกรณ์ PPE ที่รับเข้า:</label>
-            <select id="itemSelect" onchange="updateItemPrice()">
-              <option value="">-- กรุณาเลือกอุปกรณ์ --</option>
-            </select>
+            <label>1. เลขที่ PO / เลขที่ Invoice / บิลส่งของ *</label>
+            <input type="text" id="poNumber" placeholder="เช่น PO-670301 หรือ INV-2026/01">
           </div>
           <div>
-            <label>จำนวนที่รับเข้าคลัง:</label>
-            <input type="number" id="itemQty" min="1" placeholder="ระบุจำนวน เช่น 50">
+            <label>2. ชื่อผู้บันทึกตรวจรับของ *</label>
+            <input type="text" id="adminName" placeholder="ระบุชื่อเจ้าหน้าที่คลัง">
           </div>
         </div>
-        <div style="margin-top: 8px; font-size: 12px; color: #666;">
-          ราคาต่อหน่วย: <span id="lblUnitPrice" style="font-weight: bold; color: #007bff;">฿0.00</span>
-        </div>
-        <button type="button" class="btn-add" onclick="addItemToInvoice()">➕ เพิ่มรายการลงตาราง</button>
       </div>
 
-      <!-- ส่วนที่ 3: ตารางสรุปรายการที่รอการบันทึก -->
-      <h4 style="margin: 20px 0 5px 0;">📋 รายการอุปกรณ์ในบิลนี้ (<span id="itemCount">0</span> รายการ)</h4>
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 50px; text-align: center;">ลำดับ</th>
-              <th>ชื่ออุปกรณ์ PPE</th>
-              <th style="width: 110px; text-align: right;">ราคา/หน่วย</th>
-              <th style="width: 80px; text-align: center;">จำนวน</th>
-              <th style="width: 120px; text-align: right;">ยอดรวม (บาท)</th>
-              <th style="width: 60px; text-align: center;">ลบ</th>
-            </tr>
-          </thead>
-          <tbody id="invoiceTableBody">
-            <tr><td colspan="6" style="text-align: center; color: #999;">ยังไม่มีรายการในบิล กรุณาเลือกอุปกรณ์ด้านบนแล้วกดเพิ่ม</td></tr>
-          </tbody>
-        </table>
+      <!-- หัวข้อแคตตาล็อก -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="color: #2c3e50;">📦 เลือกจำนวนอุปกรณ์ PPE ที่รับเข้าตามบิล</h3>
+        <span style="font-size: 13px; color: #666;">*กรอกตัวเลขหรือกดปุ่ม + - ที่การ์ดได้ทันที</span>
       </div>
 
-      <!-- สรุปยอดเงินรวมทั้งบิล -->
-      <div class="total-banner">
-        <div>
-          <span style="font-size: 14px; color: #555;">💵 ยอดเงินรวมทั้งบิล (Invoice Total):</span>
-          <div style="font-size: 11px; color: #777;">*ตรวจดูว่ายอดนี้ตรงกับยอดสุทธิในใบเสร็จ/Invoice หรือไม่</div>
-        </div>
-        <div class="amount" id="invoiceGrandTotal">฿0.00</div>
+      <!-- Grid การ์ดสินค้าแบบ Catalog -->
+      <div class="catalog-grid" id="catalogGrid">
+        <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 40px;">กำลังโหลดรายการอุปกรณ์ PPE...</div>
       </div>
-
-      <button type="button" class="btn-submit" id="btnSubmit" onclick="submitBatchRestock()">💾 ยืนยันบันทึกรับเข้าสต็อก</button>
     </div>
 
-    <!-- ประวัติรับเข้าล่าสุด -->
-    <div class="card">
-      <h3>📋 ประวัติการรับของเข้าล่าสุด</h3>
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>วัน-เวลา</th>
-              <th>ผู้บันทึก</th>
-              <th>อุปกรณ์</th>
-              <th style="text-align: center;">จำนวนรับเข้า</th>
-              <th style="text-align: right;">ยอดเงิน (บาท)</th>
-              <th>PO / หมายเหตุ</th>
-            </tr>
-          </thead>
-          <tbody id="historyTbody">
-            <tr><td colspan="6" style="text-align: center; color: #888;">กำลังโหลดประวัติ...</td></tr>
-          </tbody>
-        </table>
+    <!-- แถบด้านล่างสำหรับคำนวณเงินและกดยืนยัน -->
+    <div class="bottom-bar">
+      <div class="bar-summary">
+        <div class="bar-item-count">
+          เลือกแล้ว: <b id="lblTotalItems" style="color: #1a73e8; font-size: 16px;">0</b> รายการ
+        </div>
+        <div class="bar-total">
+          ยอดเงินรวมทั้งบิล: <span id="lblGrandTotal">฿0.00</span>
+        </div>
       </div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitRestockBatch()">💾 ยืนยันบันทึกรับเข้าคลังทั้งหมด</button>
     </div>
   </div>
 
@@ -150,14 +124,13 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
     
     let ppeList = [];
-    let invoiceItems = [];
+    let restockCart = {}; // เก็บ { item_index: qty }
 
     function checkAuth() {
       if (document.getElementById('adminPass').value === ADMIN_PASS) {
         document.getElementById('loginBox').style.display = 'none';
-        document.getElementById('restockPanel').style.display = 'block';
+        document.getElementById('restockMain').style.display = 'block';
         loadAdminPPE();
-        loadHistory();
       } else {
         document.getElementById('authError').style.display = 'block';
       }
@@ -168,197 +141,13 @@
     }
 
     function loadAdminPPE() {
-      fetch(`${API_URL}?action=getPPEForAdmin`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.status === 'success') {
-            ppeList = res.data;
-            const select = document.getElementById('itemSelect');
-            select.innerHTML = '<option value="">-- กรุณาเลือกอุปกรณ์ --</option>';
-            ppeList.forEach((item, index) => {
-              const opt = document.createElement('option');
-              opt.value = index;
-              opt.textContent = `[${item.category}] ${item.name}`;
-              select.appendChild(opt);
-            });
-          }
-        });
-    }
+      fetch(`${API_URL}?action=getPPEForAdmin`) .then(res => res.json()) .then(res => { if (res.status === 'success') { ppeList = res.data; renderCatalog(); } }); }  function renderCatalog() { const grid = document.getElementById('catalogGrid'); grid.innerHTML = '';  ppeList.forEach((item, index) => { const card = document.createElement('div'); card.className = 'item-card';  const imgSrc = item.imageId ? `https://drive.google.com/thumbnail?id=${item.imageId}&sz=w400`
+          : 'https://via.placeholder.com/300x200?text=No+Image';
 
-    function updateItemPrice() {
-      const idx = document.getElementById('itemSelect').value;
-      if (idx === "") {
-        document.getElementById('lblUnitPrice').innerText = "฿0.00";
-        return;
-      }
-      const price = ppeList[idx].price || 0;
-      document.getElementById('lblUnitPrice').innerText = `฿${formatMoney(price)}`;
-    }
-
-    function addItemToInvoice() {
-      const idx = document.getElementById('itemSelect').value;
-      const qty = parseInt(document.getElementById('itemQty').value);
-
-      if (idx === "") {
-        alert("กรุณาเลือกอุปกรณ์ก่อน");
-        return;
-      }
-      if (!qty || qty <= 0) {
-        alert("กรุณาระบุจำนวนที่ถูกต้อง");
-        return;
-      }
-
-      const item = ppeList[idx];
-      const existing = invoiceItems.find(i => i.name === item.name);
-
-      if (existing) {
-        existing.qty += qty;
-        existing.total = existing.qty * existing.price;
-      } else {
-        invoiceItems.push({
-          name: item.name,
-          price: item.price,
-          qty: qty,
-          total: qty * item.price
-        });
-      }
-
-      document.getElementById('itemSelect').value = '';
-      document.getElementById('itemQty').value = '';
-      document.getElementById('lblUnitPrice').innerText = "฿0.00";
-
-      renderInvoiceTable();
-    }
-
-    function removeItem(index) {
-      invoiceItems.splice(index, 1);
-      renderInvoiceTable();
-    }
-
-    function renderInvoiceTable() {
-      const tbody = document.getElementById('invoiceTableBody');
-      tbody.innerHTML = '';
-      document.getElementById('itemCount').innerText = invoiceItems.length;
-
-      let grandTotal = 0;
-
-      if (invoiceItems.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">ยังไม่มีรายการในบิล กรุณาเลือกอุปกรณ์ด้านบนแล้วกดเพิ่ม</td></tr>';
-        document.getElementById('invoiceGrandTotal').innerText = "฿0.00";
-        return;
-      }
-
-      invoiceItems.forEach((item, index) => {
-        grandTotal += item.total;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td style="text-align: center;">${index + 1}</td>
-          <td><b>${item.name}</b></td>
-          <td style="text-align: right;">฿${formatMoney(item.price)}</td>
-          <td style="text-align: center; font-weight: bold; color: #28a745;">+${item.qty}</td>
-          <td style="text-align: right; font-weight: bold;">฿${formatMoney(item.total)}</td>
-          <td style="text-align: center;"><button class="btn-del" onclick="removeItem(${index})">ลบ</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('invoiceGrandTotal').innerText = `฿${formatMoney(grandTotal)}`;
-    }
-
-    function submitBatchRestock() {
-      const poNumber = document.getElementById('poNumber').value.trim();
-      const adminName = document.getElementById('adminName').value.trim();
-      const btn = document.getElementById('btnSubmit');
-      const alertBox = document.getElementById('alertBox');
-
-      if (!poNumber) {
-        alert("กรุณากรอกเลขที่ PO / บิลส่งของ");
-        document.getElementById('poNumber').focus();
-        return;
-      }
-      if (!adminName) {
-        alert("กรุณากรอกชื่อผู้บันทึกรับของ");
-        document.getElementById('adminName').focus();
-        return;
-      }
-      if (invoiceItems.length === 0) {
-        alert("ไม่มีรายการอุปกรณ์ในบิล กรุณาเพิ่มอุปกรณ์อย่างน้อย 1 รายการ");
-        return;
-      }
-
-      if (!confirm(`ยืนยันการบันทึกรับเข้าคลัง ${invoiceItems.length} รายการ\nเลขที่บิล: ${poNumber}\nยอดเงินรวม: ${document.getElementById('invoiceGrandTotal').innerText} ?`)) {
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerText = "กำลังบันทึกข้อมูลเข้าสู่ระบบ...";
-
-      const payload = {
-        type: 'RESTOCK_BATCH',
-        poNumber: poNumber,
-        adminName: adminName,
-        items: invoiceItems.map(i => ({ name: i.name, qty: i.qty }))
-      };
-
-      fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(res => {
-        btn.disabled = false;
-        btn.innerText = "💾 ยืนยันบันทึกรับเข้าสต็อก";
-
-        if (res.status === 'success') {
-          alertBox.style.display = 'block';
-          alertBox.style.background = '#d4edda';
-          alertBox.style.color = '#155724';
-          alertBox.innerText = `✅ บันทึกรับเข้าบิล ${poNumber} จำนวน ${invoiceItems.length} รายการ เรียบร้อยแล้ว!`;
-
-          invoiceItems = [];
-          document.getElementById('poNumber').value = '';
-          renderInvoiceTable();
-          loadHistory();
-
-          setTimeout(() => { alertBox.style.display = 'none'; }, 5000);
-        } else {
-          alert("เกิดข้อผิดพลาด: " + res.message);
-        }
-      })
-      .catch(() => {
-        btn.disabled = false;
-        btn.innerText = "💾 ยืนยันบันทึกรับเข้าสต็อก";
-        alert("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
-      });
-    }
-
-    function loadHistory() {
-      fetch(`${API_URL}?action=getRestockHistory`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.status === 'success') {
-            const tbody = document.getElementById('historyTbody');
-            tbody.innerHTML = '';
-            if (res.data.length === 0) {
-              tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">ยังไม่มีประวัติการรับเข้า</td></tr>';
-              return;
-            }
-            res.data.forEach(row => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-                <td>${row.date}</td>
-                <td>${row.actor}</td>
-                <td><b>${row.item}</b></td>
-                <td style="color: #28a745; font-weight: bold; text-align: center;">+${row.qty}</td>
-                <td style="font-weight: bold; color: #0d47a1; text-align: right;">฿${formatMoney(row.totalPrice)}</td>
-                <td>${row.note}</td>
-              `;
-              tbody.appendChild(tr);
-            });
-          }
-        });
-    }
-  </script>
-</body>
-</html>
+        card.innerHTML = `
+          <img class="item-img" src="${imgSrc}" alt="${item.name}">
+          <div class="item-body">
+            <div>
+              <span class="item-cat">${item.category}</span>
+              <div class="item-name">${item.name}</div>
+              <div class="item-price">ราคาชิ้นละ:
