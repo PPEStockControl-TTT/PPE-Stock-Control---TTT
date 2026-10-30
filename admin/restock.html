@@ -51,4 +51,323 @@
       <h2>📥 บันทึกรับอุปกรณ์เข้าคลัง (Stock In)</h2>
       <div id="alertBox" class="alert"></div>
 
-      <!-- ส่วนที่ 1: ข
+      <!-- ส่วนที่ 1: ข้อมูลบิล (กรอกครั้งเดียว) -->
+      <div class="grid-2">
+        <div>
+          <label>1. เลขที่ PO / เลขที่ Invoice / บิลส่งของ *</label>
+          <input type="text" id="poNumber" required placeholder="เช่น PO-670301 หรือ INV-2026/01">
+        </div>
+        <div>
+          <label>2. ชื่อผู้บันทึกตรวจรับของ *</label>
+          <input type="text" id="adminName" required placeholder="ระบุชื่อเจ้าหน้าที่คลัง">
+        </div>
+      </div>
+
+      <!-- ส่วนที่ 2: ฟอร์มเลือกอุปกรณ์เพื่อเพิ่มลงบิล -->
+      <div class="add-box">
+        <h4 style="margin: 0 0 10px 0; color: #2c3e50;">➕ เลือกอุปกรณ์และจำนวนเพื่อเพิ่มลงบิล</h4>
+        
+        <label>เลือกอุปกรณ์ PPE:</label>
+        <select id="itemSelect" onchange="updatePreview()">
+          <option value="">-- กำลังโหลดรายการ PPE --</option>
+        </select>
+
+        <label>จำนวนที่รับเข้า (ตามบิล/Invoice):</label>
+        <input type="number" id="itemQty" min="1" placeholder="เช่น 50" oninput="updatePreview()">
+
+        <!-- กล่องพรีวิวราคาเหมือนเวอร์ชันเดิม -->
+        <div class="price-preview-box">
+          <div class="preview-row">
+            <span>ราคาต่อหน่วย (Unit Price):</span>
+            <span id="lblUnitPrice">฿0.00</span>
+          </div>
+          <div class="preview-row">
+            <span>จำนวนรับเข้า:</span>
+            <span id="lblQtyPreview">0</span>
+          </div>
+          <div class="preview-total">
+            <span>💵 ยอดเงินของรายการนี้:</span>
+            <span id="lblRowTotal">฿0.00</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn-add" onclick="addItemToBatch()">➕ เพิ่มรายการนี้ลงบิล</button>
+      </div>
+
+      <!-- ส่วนที่ 3: ตารางสรุปรายการในบิลนี้ -->
+      <h4 style="margin: 22px 0 5px 0;">📋 รายการอุปกรณ์ในบิลนี้ (<span id="itemCount">0</span> รายการ)</h4>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align: center;">ลำดับ</th>
+              <th>ชื่ออุปกรณ์ PPE</th>
+              <th style="width: 100px; text-align: right;">ราคา/หน่วย</th>
+              <th style="width: 80px; text-align: center;">จำนวน</th>
+              <th style="width: 120px; text-align: right;">ยอดรวม (บาท)</th>
+              <th style="width: 50px; text-align: center;">ลบ</th>
+            </tr>
+          </thead>
+          <tbody id="invoiceTableBody">
+            <tr><td colspan="6" style="text-align: center; color: #999;">ยังไม่มีรายการในบิล กรุณาเลือกอุปกรณ์ด้านบนแล้วกดเพิ่ม</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ยอดรวมสุทธิของทั้งบิล -->
+      <div class="total-banner">
+        <div>
+          <span style="font-size: 14px; color: #555;">💵 ยอดเงินรวมทั้งบิล (Invoice Total):</span>
+          <div style="font-size: 11px; color: #777;">*ตรวจสอบยอดนี้ให้ตรงกับยอดสุทธิในใบเสร็จ/Invoice</div>
+        </div>
+        <div class="amount" id="invoiceGrandTotal">฿0.00</div>
+      </div>
+
+      <button type="button" class="btn-submit" id="btnSubmit" onclick="submitBatchRestock()">💾 ยืนยันบันทึกรับเข้าคลังทั้งหมด</button>
+    </div>
+
+    <!-- ส่วนที่ 4: ประวัติการรับของเข้าล่าสุด -->
+    <div class="card">
+      <h3>📋 ประวัติการรับของเข้าล่าสุด</h3>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>วัน-เวลา</th>
+              <th>ผู้บันทึก</th>
+              <th>อุปกรณ์</th>
+              <th style="text-align: center;">จำนวนรับเข้า</th>
+              <th style="text-align: right;">ยอดเงิน (บาท)</th>
+              <th>PO / หมายเหตุ</th>
+            </tr>
+          </thead>
+          <tbody id="historyTbody">
+            <tr><td colspan="6" style="text-align: center; color: #888;">กำลังโหลดประวัติ...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
+    
+    let ppeList = [];
+    let invoiceItems = [];
+
+    // เปิดหน้ามาโหลดข้อมูลทันทีโดยไม่ต้องผ่านหน้ารหัสผ่าน
+    window.onload = function() {
+      loadAdminPPE();
+      loadHistory();
+    };
+
+    function formatMoney(num) {
+      return Number(num || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function loadAdminPPE() {
+      fetch(`${API_URL}?action=getPPEForAdmin`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            ppeList = res.data;
+            const select = document.getElementById('itemSelect');
+            select.innerHTML = '<option value="">-- กรุณาเลือกอุปกรณ์ PPE --</option>';
+            ppeList.forEach((item, index) => {
+              const opt = document.createElement('option');
+              opt.value = index;
+              opt.textContent = `[${item.category}] ${item.name}`;
+              select.appendChild(opt);
+            });
+          }
+        });
+    }
+
+    function updatePreview() {
+      const idx = document.getElementById('itemSelect').value;
+      const qty = Number(document.getElementById('itemQty').value) || 0;
+
+      if (idx === "") {
+        document.getElementById('lblUnitPrice').innerText = "฿0.00";
+        document.getElementById('lblQtyPreview').innerText = "0";
+        document.getElementById('lblRowTotal').innerText = "฿0.00";
+        return;
+      }
+
+      const unitPrice = ppeList[idx].price || 0;
+      const total = unitPrice * qty;
+
+      document.getElementById('lblUnitPrice').innerText = `฿${formatMoney(unitPrice)}`;
+      document.getElementById('lblQtyPreview').innerText = qty;
+      document.getElementById('lblRowTotal').innerText = `฿${formatMoney(total)}`;
+    }
+
+    function addItemToBatch() {
+      const idx = document.getElementById('itemSelect').value;
+      const qty = parseInt(document.getElementById('itemQty').value);
+
+      if (idx === "") {
+        alert("กรุณาเลือกอุปกรณ์ก่อน");
+        return;
+      }
+      if (!qty || qty <= 0) {
+        alert("กรุณาระบุจำนวนที่ต้องการรับเข้าให้ถูกต้อง");
+        return;
+      }
+
+      const item = ppeList[idx];
+      const existing = invoiceItems.find(i => i.name === item.name);
+
+      if (existing) {
+        existing.qty += qty;
+        existing.total = existing.qty * existing.price;
+      } else {
+        invoiceItems.push({
+          name: item.name,
+          price: item.price,
+          qty: qty,
+          total: qty * item.price
+        });
+      }
+
+      // ล้างช่องเลือกอุปกรณ์
+      document.getElementById('itemSelect').value = '';
+      document.getElementById('itemQty').value = '';
+      updatePreview();
+      renderTable();
+    }
+
+    function removeItem(index) {
+      invoiceItems.splice(index, 1);
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('invoiceTableBody');
+      tbody.innerHTML = '';
+      document.getElementById('itemCount').innerText = invoiceItems.length;
+
+      let grandTotal = 0;
+
+      if (invoiceItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">ยังไม่มีรายการในบิล กรุณาเลือกอุปกรณ์ด้านบนแล้วกดเพิ่ม</td></tr>';
+        document.getElementById('invoiceGrandTotal').innerText = "฿0.00";
+        return;
+      }
+
+      invoiceItems.forEach((item, index) => {
+        grandTotal += item.total;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align: center;">${index + 1}</td>
+          <td><b>${item.name}</b></td>
+          <td style="text-align: right;">฿${formatMoney(item.price)}</td>
+          <td style="text-align: center; font-weight: bold; color: #28a745;">+${item.qty}</td>
+          <td style="text-align: right; font-weight: bold;">฿${formatMoney(item.total)}</td>
+          <td style="text-align: center;"><button class="btn-del" onclick="removeItem(${index})">ลบ</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('invoiceGrandTotal').innerText = `฿${formatMoney(grandTotal)}`;
+    }
+
+    function submitBatchRestock() {
+      const poNumber = document.getElementById('poNumber').value.trim();
+      const adminName = document.getElementById('adminName').value.trim();
+      const btn = document.getElementById('btnSubmit');
+      const alertBox = document.getElementById('alertBox');
+
+      if (!poNumber) {
+        alert("กรุณากรอกเลขที่ PO / Invoice ด้านบนก่อน");
+        document.getElementById('poNumber').focus();
+        return;
+      }
+      if (!adminName) {
+        alert("กรุณากรอกชื่อผู้บันทึกตรวจรับของด้านบนก่อน");
+        document.getElementById('adminName').focus();
+        return;
+      }
+      if (invoiceItems.length === 0) {
+        alert("ไม่มีรายการอุปกรณ์ในบิล กรุณาเพิ่มอุปกรณ์อย่างน้อย 1 รายการ");
+        return;
+      }
+
+      const totalMoney = document.getElementById('invoiceGrandTotal').innerText;
+      if (!confirm(`ยืนยันการบันทึกรับเข้าคลัง ${invoiceItems.length} รายการ\nเลขที่บิล: ${poNumber}\nยอดเงินรวม: ${totalMoney}\n\nต้องการบันทึกหรือไม่?`)) {
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "กำลังบันทึกข้อมูลเข้าสู่ระบบ...";
+
+      const payload = {
+        type: 'RESTOCK_BATCH',
+        poNumber: poNumber,
+        adminName: adminName,
+        items: invoiceItems.map(i => ({ name: i.name, qty: i.qty }))
+      };
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerText = "💾 ยืนยันบันทึกรับเข้าคลังทั้งหมด";
+
+        if (res.status === 'success') {
+          alertBox.style.display = 'block';
+          alertBox.style.background = '#d4edda';
+          alertBox.style.color = '#155724';
+          alertBox.innerText = `✅ บันทึกรับเข้าบิล ${poNumber} จำนวน ${invoiceItems.length} รายการ (ยอดเงิน: ${totalMoney}) สำเร็จแล้ว!`;
+
+          invoiceItems = [];
+          document.getElementById('poNumber').value = '';
+          renderTable();
+          loadHistory();
+
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setTimeout(() => { alertBox.style.display = 'none'; }, 6000);
+        } else {
+          alert("เกิดข้อผิดพลาด: " + res.message);
+        }
+      })
+      .catch(() => {
+        btn.disabled = false;
+        btn.innerText = "💾 ยืนยันบันทึกรับเข้าคลังทั้งหมด";
+        alert("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
+      });
+    }
+
+    function loadHistory() {
+      fetch(`${API_URL}?action=getRestockHistory`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            const tbody = document.getElementById('historyTbody');
+            tbody.innerHTML = '';
+            if (res.data.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">ยังไม่มีประวัติการรับเข้า</td></tr>';
+              return;
+            }
+            res.data.forEach(row => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${row.date}</td>
+                <td>${row.actor}</td>
+                <td><b>${row.item}</b></td>
+                <td style="color: #28a745; font-weight: bold; text-align: center;">+${row.qty}</td>
+                <td style="font-weight: bold; color: #0d47a1; text-align: right;">฿${formatMoney(row.totalPrice)}</td>
+                <td>${row.note}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        });
+    }
+  </script>
+</body>
+</html>
