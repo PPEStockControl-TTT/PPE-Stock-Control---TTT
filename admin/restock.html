@@ -19,7 +19,7 @@
     .info-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     label { font-weight: 600; display: block; margin-bottom: 6px; font-size: 13px; color: #444; }
-    input[type="text"], input[type="password"] { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+    input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
 
     /* Catalog Grid */
     .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; margin-top: 15px; }
@@ -46,29 +46,14 @@
     .btn-submit { background: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; padding: 12px 28px; cursor: pointer; transition: 0.2s; }
     .btn-submit:hover { background: #0056b3; }
     .btn-submit:disabled { background: #80bdff; cursor: not-allowed; }
-
-    /* Login Modal */
-    .login-box { max-width: 400px; margin: 80px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
-    .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-    .btn-login { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
-    .btn-login:hover { background: #1557b0; }
     
     .alert-box { padding: 12px; border-radius: 6px; margin-bottom: 15px; display: none; text-align: center; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <!-- จอ Login Admin -->
-  <div class="login-box" id="loginBox">
-    <h2>🔐 เข้าสู่ระบบรับของเข้าคลัง</h2>
-    <p style="color: #666; font-size: 14px;">กรุณากรอกรหัสผ่าน Admin (รหัสเริ่มต้น: 1234)</p>
-    <input type="password" id="adminPass" placeholder="รหัสผ่าน Admin" onkeydown="handleEnter(event)">
-    <button class="btn-login" onclick="checkAuth()">เข้าสู่ระบบ</button>
-    <div id="authError" style="color: red; margin-top: 10px; display: none; font-size: 14px;">รหัสผ่านไม่ถูกต้อง! กรุณาลองใหม่ (รหัส: 1234)</div>
-  </div>
-
-  <!-- จอ Catalog รับของเข้า -->
-  <div id="restockMain" style="display: none;">
+  <!-- จอ Catalog รับของเข้า แสดงผลทันที -->
+  <div id="restockMain">
     <header>
       <h2>📥 แคตตาล็อกรับของเข้าคลัง (Restock Catalog)</h2>
       <div class="nav-links">
@@ -121,33 +106,15 @@
   </div>
 
   <script>
-    const ADMIN_PASS = "1234";
     const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
     
     let ppeList = [];
     let restockCart = {};
 
-    function handleEnter(e) {
-      if (e.key === 'Enter') {
-        checkAuth();
-      }
-    }
-
-    function checkAuth() {
-      const inputPass = document.getElementById('adminPass').value.trim();
-      const errBox = document.getElementById('authError');
-
-      if (inputPass === ADMIN_PASS) {
-        errBox.style.display = 'none';
-        document.getElementById('loginBox').style.display = 'none';
-        document.getElementById('restockMain').style.display = 'block';
-        loadAdminPPE();
-      } else {
-        errBox.style.display = 'block';
-        document.getElementById('adminPass').value = '';
-        document.getElementById('adminPass').focus();
-      }
-    }
+    // เริ่มทำงานทันทีที่เปิดหน้าเว็บ
+    window.onload = function() {
+      loadAdminPPE();
+    };
 
     function formatMoney(num) {
       return Number(num || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -244,3 +211,86 @@
     }
 
     function submitRestockBatch() {
+      const poNumber = document.getElementById('poNumber').value.trim();
+      const adminName = document.getElementById('adminName').value.trim();
+      const btn = document.getElementById('btnSubmit');
+      const alertBox = document.getElementById('alertBox');
+
+      if (!poNumber) {
+        alert("กรุณาระบุเลขที่ PO / Invoice ด้านบนก่อน");
+        document.getElementById('poNumber').focus();
+        return;
+      }
+      if (!adminName) {
+        alert("กรุณาระบุชื่อผู้บันทึกตรวจรับของด้านบนก่อน");
+        document.getElementById('adminName').focus();
+        return;
+      }
+
+      const itemsToSend = [];
+      for (let idx in restockCart) {
+        itemsToSend.push({
+          name: ppeList[idx].name,
+          qty: restockCart[idx]
+        });
+      }
+
+      if (itemsToSend.length === 0) {
+        alert("กรุณาเลือกจำนวนรับเข้าอย่างน้อย 1 รายการอุปกรณ์");
+        return;
+      }
+
+      const totalMoney = document.getElementById('lblGrandTotal').innerText;
+      if (!confirm(`ยืนยันการรับเข้าคลัง ${itemsToSend.length} รายการ\nเลขที่บิล: ${poNumber}\nยอดเงินรวม: ${totalMoney}\n\nต้องการบันทึกข้อมูลหรือไม่?`)) {
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "กำลังบันทึกข้อมูล...";
+
+      const payload = {
+        type: 'RESTOCK_BATCH',
+        poNumber: poNumber,
+        adminName: adminName,
+        items: itemsToSend
+      };
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerText = "💾 ยืนยันบันทึกรับเข้าคลังทั้งหมด";
+
+        if (res.status === 'success') {
+          alertBox.style.display = 'block';
+          alertBox.style.background = '#d4edda';
+          alertBox.style.color = '#155724';
+          alertBox.innerText = `✅ บันทึกรับเข้าบิล ${poNumber} จำนวน ${itemsToSend.length} รายการ (ยอดเงิน: ${totalMoney}) เรียบร้อยแล้ว!`;
+
+          document.getElementById('poNumber').value = '';
+          restockCart = {};
+          ppeList.forEach((_, i) => {
+            const el = document.getElementById(`qty_${i}`);
+            if (el) el.value = 0;
+          });
+          calculateTotals();
+
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setTimeout(() => { alertBox.style.display = 'none'; }, 6000);
+        } else {
+          alert("เกิดข้อผิดพลาด: " + res.message);
+        }
+      })
+      .catch(() => {
+        btn.disabled = false;
+        btn.innerText = "💾 ยืนยันบันทึกรับเข้าคลังทั้งหมด";
+        alert("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
+      });
+    }
+  </script>
+</body>
+</html>
