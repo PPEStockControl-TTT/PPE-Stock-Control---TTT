@@ -19,7 +19,7 @@
     .info-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     label { font-weight: 600; display: block; margin-bottom: 6px; font-size: 13px; color: #444; }
-    input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+    input[type="text"], input[type="password"] { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
 
     /* Catalog Grid */
     .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; margin-top: 15px; }
@@ -50,7 +50,8 @@
     /* Login Modal */
     .login-box { max-width: 400px; margin: 80px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
     .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-    .btn-login { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .btn-login { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
+    .btn-login:hover { background: #1557b0; }
     
     .alert-box { padding: 12px; border-radius: 6px; margin-bottom: 15px; display: none; text-align: center; font-weight: bold; }
   </style>
@@ -60,10 +61,10 @@
   <!-- จอ Login Admin -->
   <div class="login-box" id="loginBox">
     <h2>🔐 เข้าสู่ระบบรับของเข้าคลัง</h2>
-    <p style="color: #666; font-size: 14px;">กรุณากรอกรหัสผ่าน Admin</p>
-    <input type="password" id="adminPass" placeholder="รหัสผ่าน Admin">
+    <p style="color: #666; font-size: 14px;">กรุณากรอกรหัสผ่าน Admin (รหัสเริ่มต้น: 1234)</p>
+    <input type="password" id="adminPass" placeholder="รหัสผ่าน Admin" onkeydown="handleEnter(event)">
     <button class="btn-login" onclick="checkAuth()">เข้าสู่ระบบ</button>
-    <div id="authError" style="color: red; margin-top: 10px; display: none;">รหัสผ่านไม่ถูกต้อง!</div>
+    <div id="authError" style="color: red; margin-top: 10px; display: none; font-size: 14px;">รหัสผ่านไม่ถูกต้อง! กรุณาลองใหม่ (รหัส: 1234)</div>
   </div>
 
   <!-- จอ Catalog รับของเข้า -->
@@ -124,15 +125,27 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
     
     let ppeList = [];
-    let restockCart = {}; // เก็บ { item_index: qty }
+    let restockCart = {};
+
+    function handleEnter(e) {
+      if (e.key === 'Enter') {
+        checkAuth();
+      }
+    }
 
     function checkAuth() {
-      if (document.getElementById('adminPass').value === ADMIN_PASS) {
+      const inputPass = document.getElementById('adminPass').value.trim();
+      const errBox = document.getElementById('authError');
+
+      if (inputPass === ADMIN_PASS) {
+        errBox.style.display = 'none';
         document.getElementById('loginBox').style.display = 'none';
         document.getElementById('restockMain').style.display = 'block';
         loadAdminPPE();
       } else {
-        document.getElementById('authError').style.display = 'block';
+        errBox.style.display = 'block';
+        document.getElementById('adminPass').value = '';
+        document.getElementById('adminPass').focus();
       }
     }
 
@@ -141,7 +154,34 @@
     }
 
     function loadAdminPPE() {
-      fetch(`${API_URL}?action=getPPEForAdmin`) .then(res => res.json()) .then(res => { if (res.status === 'success') { ppeList = res.data; renderCatalog(); } }); }  function renderCatalog() { const grid = document.getElementById('catalogGrid'); grid.innerHTML = '';  ppeList.forEach((item, index) => { const card = document.createElement('div'); card.className = 'item-card';  const imgSrc = item.imageId ? `https://drive.google.com/thumbnail?id=${item.imageId}&sz=w400`
+      fetch(`${API_URL}?action=getPPEForAdmin`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            ppeList = res.data;
+            renderCatalog();
+          }
+        })
+        .catch(err => {
+          document.getElementById('catalogGrid').innerHTML = '<div style="color: red; text-align: center; grid-column: 1 / -1;">ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่อีกครั้ง</div>';
+        });
+    }
+
+    function renderCatalog() {
+      const grid = document.getElementById('catalogGrid');
+      grid.innerHTML = '';
+
+      if (ppeList.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888;">ไม่พบรายการอุปกรณ์ PPE ในระบบ</div>';
+        return;
+      }
+
+      ppeList.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+
+        const imgSrc = item.imageId 
+          ? `https://drive.google.com/thumbnail?id=${item.imageId}&sz=w400`
           : 'https://via.placeholder.com/300x200?text=No+Image';
 
         card.innerHTML = `
@@ -150,4 +190,57 @@
             <div>
               <span class="item-cat">${item.category}</span>
               <div class="item-name">${item.name}</div>
-              <div class="item-price">ราคาชิ้นละ:
+              <div class="item-price">ราคาชิ้นละ: ฿${formatMoney(item.price)} / ${item.unit || 'ชิ้น'}</div>
+            </div>
+            
+            <div class="qty-control">
+              <button class="btn-qty" onclick="changeQty(${index}, -1)">-</button>
+              <input type="number" class="qty-input" id="qty_${index}" value="0" min="0" onchange="inputQty(${index}, this.value)">
+              <button class="btn-qty" onclick="changeQty(${index}, 1)">+</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function changeQty(index, delta) {
+      const input = document.getElementById(`qty_${index}`);
+      let val = (parseInt(input.value) || 0) + delta;
+      if (val < 0) val = 0;
+      input.value = val;
+      updateCart(index, val);
+    }
+
+    function inputQty(index, value) {
+      let val = parseInt(value) || 0;
+      if (val < 0) val = 0;
+      document.getElementById(`qty_${index}`).value = val;
+      updateCart(index, val);
+    }
+
+    function updateCart(index, qty) {
+      if (qty > 0) {
+        restockCart[index] = qty;
+      } else {
+        delete restockCart[index];
+      }
+      calculateTotals();
+    }
+
+    function calculateTotals() {
+      let totalItems = 0;
+      let grandTotal = 0;
+
+      for (let idx in restockCart) {
+        const qty = restockCart[idx];
+        const price = ppeList[idx].price || 0;
+        totalItems += 1;
+        grandTotal += (qty * price);
+      }
+
+      document.getElementById('lblTotalItems').innerText = totalItems;
+      document.getElementById('lblGrandTotal').innerText = `฿${formatMoney(grandTotal)}`;
+    }
+
+    function submitRestockBatch() {
