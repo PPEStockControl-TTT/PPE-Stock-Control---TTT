@@ -3,165 +3,187 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - PPE Stock Control</title>
+  <title>Admin Dashboard - PPE Stock Control</title>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #eef2f5; }
-    .container { max-width: 900px; margin: 0 auto; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    h2, h3 { margin-top: 0; color: #2c3e50; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-top: 15px; }
-    .stock-box { background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 6px; text-align: center; }
-    .stock-box h4 { margin: 0 0 5px 0; font-size: 14px; color: #555; }
-    .stock-box .num { font-size: 24px; font-weight: bold; color: #007bff; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    th { background: #e9ecef; }
-    input, select, button { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; }
-    button { background: #007bff; color: white; border: none; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .danger-btn { background: #dc3545; }
-    .danger-btn:hover { background: #c82333; }
-    .badge-in { color: #28a745; font-weight: bold; }
-    .badge-out { color: #dc3545; font-weight: bold; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #eef2f5; color: #333; }
+    header { background: white; padding: 15px 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; }
+    h2, h3 { margin: 0; color: #1a73e8; }
+    .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    
+    /* Login Box */
+    .login-box { max-width: 400px; margin: 80px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
+    .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    .btn-login { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+    /* Nav Buttons */
+    .nav-actions { display: flex; gap: 10px; }
+    .btn-action { padding: 8px 14px; background: #007bff; color: white; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold; }
+    .btn-action.green { background: #28a745; }
+
+    /* Stock Balance Grid */
+    .stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
+    .stock-card { background: #fff; border: 1px solid #e0e6ed; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
+    .stock-card.low-stock { border-left: 5px solid #dc3545; background: #fff8f8; }
+    .stock-card.normal-stock { border-left: 5px solid #28a745; }
+    .stock-title { font-weight: 600; font-size: 14px; margin-bottom: 8px; line-height: 1.4; }
+    .stock-metrics { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
+    .stock-num { font-size: 26px; font-weight: bold; }
+    .stock-num.danger { color: #dc3545; }
+    .stock-num.safe { color: #28a745; }
+    .stock-sub { font-size: 11px; color: #666; }
+
+    /* Transactions Table */
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    th, td { border: 1px solid #e2e8f0; padding: 9px; text-align: left; }
+    th { background: #f8fafc; color: #475569; }
+    .badge-in { background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+    .badge-out { background: #f8d7da; color: #721c24; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
   </style>
 </head>
 <body>
-  <div class="container" id="adminPanel" style="display: none;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-      <h2>📊 ระบบควบคุมสต็อก PPE (Admin Only)</h2>
-      <a href="index.html" style="text-decoration: none; color: #007bff;">👈 ไปหน้าเบิกของ</a>
-    </div>
 
-    <!-- บล็อกแสดงสต็อกคงเหลือ -->
-    <div class="card">
-      <h3>📦 ยอดสต็อกคงเหลือปัจจุบัน</h3>
-      <div class="grid" id="stockOverview"></div>
-    </div>
+  <!-- จอ Login Admin -->
+  <div class="login-box" id="loginScreen">
+    <h2>🔐 เข้าสู่ระบบ Admin</h2>
+    <p style="color: #666; font-size: 14px;">กรุณากรอกรหัสผ่านเพื่อจัดการสต็อก PPE</p>
+    <input type="password" id="adminPass" placeholder="รหัสผ่าน Admin">
+    <button class="btn-login" onclick="verifyAdmin()">เข้าสู่แดชบอร์ด</button>
+    <div id="loginErr" style="color:red; margin-top: 10px; display:none; font-size: 13px;">รหัสผ่านไม่ถูกต้อง</div>
+  </div>
 
-    <!-- บล็อกรับของเข้าสต็อก (Restock) -->
-    <div class="card">
-      <h3>➕ รับอุปกรณ์เข้าคลัง (Restock / คืนของ)</h3>
-      <form id="restockForm" style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <select id="restockItem" required>
-          <option value="หมวกนิรภัย (Safety Helmet)">หมวกนิรภัย (Safety Helmet)</option>
-          <option value="แว่นตานิรภัย (Safety Glasses)">แว่นตานิรภัย (Safety Glasses)</option>
-          <option value="ถุงมือกันบาด (Cut Gloves)">ถุงมือกันบาด (Cut Gloves)</option>
-          <option value="รองเท้าเซฟตี้ (Safety Shoes)">รองเท้าเซฟตี้ (Safety Shoes)</option>
-          <option value="ที่อุดหู (Earplugs)">ที่อุดหู (Earplugs)</option>
-        </select>
-        <input type="number" id="restockQty" min="1" placeholder="จำนวน" required style="width: 120px;">
-        <input type="text" id="restockNote" placeholder="หมายเหตุ / เลข PO" style="flex: 1;">
-        <button type="submit">เพิ่มสต็อก</button>
-      </form>
-    </div>
-
-    <!-- บล็อกประวัติรายการทั้งหมด -->
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3>📋 ประวัติการเบิก-จ่ายทั้งหมด</h3>
-        <button onclick="clearData()" class="danger-btn" style="font-size: 12px;">ล้างข้อมูลทั้งหมด</button>
+  <!-- หน้าแดชบอร์ดหลัก -->
+  <div id="dashboardScreen" style="display: none;">
+    <header>
+      <h2>📊 PPE Stock Control (Admin Dashboard)</h2>
+      <div class="nav-actions">
+        <a href="restock.html" class="btn-action green">📥 รับของเข้าคลัง (Restock)</a>
+        <a href="../index.html" class="btn-action">🦺 หน้าเบิกพนักงาน</a>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>วัน-เวลา</th>
-            <th>อุปกรณ์</th>
-            <th>ประเภท</th>
-            <th>จำนวน</th>
-            <th>ผู้ทำรายการ / หมายเหตุ</th>
-          </tr>
-        </thead>
-        <tbody id="logTableBody"></tbody>
-      </table>
+    </header>
+
+    <div class="container">
+      <!-- การ์ดยอดคงเหลือ -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3>📦 สรุปยอดสต็อกคงเหลือปัจจุบัน</h3>
+          <button onclick="loadDashboardData()" style="padding: 6px 12px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer;">🔄 อัปเดตยอด</button>
+        </div>
+        <div class="stock-grid" id="stockGrid">
+          <div style="color: #888; grid-column: 1 / -1; text-align: center; padding: 20px;">กำลังคำนวณยอดคงเหลือ...</div>
+        </div>
+      </div>
+
+      <!-- ตารางความเคลื่อนไหวล่าสุด -->
+      <div class="card">
+        <h3>📋 ประวัติความเคลื่อนไหวล่าสุด (IN / OUT)</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>วัน-เวลา</th>
+                <th>ประเภท</th>
+                <th>อุปกรณ์</th>
+                <th>จำนวน</th>
+                <th>ข้อมูล / แผนก</th>
+                <th>ผู้ดำเนินการ</th>
+              </tr>
+            </thead>
+            <tbody id="transTable">
+              <tr><td colspan="6" style="text-align: center; color: #888;">กำลังโหลดประวัติ...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
-    // รหัสผ่าน Admin (ตั้งค่าเริ่มต้นไว้ที่ 1234)
     const ADMIN_PASSWORD = "1234";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
 
-    const inputPass = prompt("กรุณากรอกรหัสผ่านสำหรับ Admin:");
-    if (inputPass === ADMIN_PASSWORD) {
-      document.getElementById('adminPanel').style.display = 'block';
-      loadDashboard();
-    } else {
-      alert("รหัสผ่านไม่ถูกต้อง!");
-      window.location.href = "index.html";
-    }
-
-    const ppeList = [
-      "หมวกนิรภัย (Safety Helmet)",
-      "แว่นตานิรภัย (Safety Glasses)",
-      "ถุงมือกันบาด (Cut Gloves)",
-      "รองเท้าเซฟตี้ (Safety Shoes)",
-      "ที่อุดหู (Earplugs)"
-    ];
-
-    function loadDashboard() {
-      const logs = JSON.parse(localStorage.getItem('ppe_logs')) || [];
-      
-      // คำนวณสต็อก
-      const stockBalance = {};
-      ppeList.forEach(item => stockBalance[item] = 0);
-
-      logs.forEach(log => {
-        if (stockBalance[log.item] !== undefined) {
-          if (log.type === 'IN') stockBalance[log.item] += Number(log.qty);
-          if (log.type === 'OUT') stockBalance[log.item] -= Number(log.qty);
-        }
-      });
-
-      // แสดงการ์ดสต็อก
-      const overviewDiv = document.getElementById('stockOverview');
-      overviewDiv.innerHTML = '';
-      ppeList.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'stock-box';
-        const qty = stockBalance[item];
-        div.innerHTML = `
-          <h4>${item}</h4>
-          <div class="num" style="color: ${qty < 5 ? '#dc3545' : '#007bff'}">${qty}</div>
-        `;
-        overviewDiv.appendChild(div);
-      });
-
-      // แสดงตารางประวัติ
-      const tableBody = document.getElementById('logTableBody');
-      tableBody.innerHTML = '';
-      logs.slice().reverse().forEach(log => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${log.date}</td>
-          <td>${log.item}</td>
-          <td><span class="${log.type === 'IN' ? 'badge-in' : 'badge-out'}">${log.type === 'IN' ? 'รับเข้า' : 'เบิกออก'}</span></td>
-          <td>${log.qty}</td>
-          <td>${log.user}</td>
-        `;
-        tableBody.appendChild(row);
-      });
-    }
-
-    // ฟังก์ชันรับของเข้า
-    document.getElementById('restockForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const logs = JSON.parse(localStorage.getItem('ppe_logs')) || [];
-      logs.push({
-        date: new Date().toLocaleString('th-TH'),
-        item: document.getElementById('restockItem').value,
-        type: 'IN',
-        qty: parseInt(document.getElementById('restockQty').value),
-        user: 'Admin Restock: ' + (document.getElementById('restockNote').value || 'รับของเข้าคลัง')
-      });
-      localStorage.setItem('ppe_logs', JSON.stringify(logs));
-      document.getElementById('restockForm').reset();
-      loadDashboard();
-    });
-
-    function clearData() {
-      if (confirm("คุณแน่ใจหรือไม่ที่จะล้างประวัติและสต็อกทั้งหมด?")) {
-        localStorage.removeItem('ppe_logs');
-        loadDashboard();
+    function verifyAdmin() {
+      const pass = document.getElementById('adminPass').value;
+      if (pass === ADMIN_PASSWORD) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboardScreen').style.display = 'block';
+        loadDashboardData();
+      } else {
+        document.getElementById('loginErr').style.display = 'block';
       }
+    }
+
+    function loadDashboardData() {
+      // 1. ดึงยอดคงเหลือ
+      fetch(`${API_URL}?action=getStockBalance`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') renderStockCards(res.data);
+        });
+
+      // 2. ดึงประวัติธุรกรรม
+      fetch(`${API_URL}?action=getAllTransactions`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') renderTransactions(res.data);
+        });
+    }
+
+    function renderStockCards(stocks) {
+      const grid = document.getElementById('stockGrid');
+      grid.innerHTML = '';
+
+      if (stocks.length === 0) {
+        grid.innerHTML = '<div style="color: #888; text-align: center; grid-column: 1 / -1;">ไม่มีข้อมูลสต็อก</div>';
+        return;
+      }
+
+      stocks.forEach(item => {
+        const isLow = item.balance <= 5; // เตือนถ้าเหลือน้อยกว่าหรือเท่ากับ 5 ชิ้น
+        const card = document.createElement('div');
+        card.className = `stock-card ${isLow ? 'low-stock' : 'normal-stock'}`;
+        card.innerHTML = `
+          <div>
+            <span style="font-size: 11px; color: #888;">รหัส: ${item.id}</span>
+            <div class="stock-title">${item.name}</div>
+          </div>
+          <div class="stock-metrics">
+            <div>
+              <div class="stock-sub">รับเข้าสะสม: +${item.inQty}</div>
+              <div class="stock-sub">เบิกสะสม: -${item.outQty}</div>
+            </div>
+            <div style="text-align: right;">
+              <span class="stock-num ${isLow ? 'danger' : 'safe'}">${item.balance}</span>
+              ${isLow ? '<div style="color: #dc3545; font-size: 11px; font-weight: bold;">⚠️ ของใกล้หมด</div>' : ''}
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function renderTransactions(list) {
+      const tbody = document.getElementById('transTable');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">ยังไม่มีประวัติรายการ</td></tr>';
+        return;
+      }
+
+      list.forEach(row => {
+        const tr = document.createElement('tr');
+        const isIn = row.type === 'IN';
+        tr.innerHTML = `
+          <td>${row.date}</td>
+          <td><span class="${isIn ? 'badge-in' : 'badge-out'}">${isIn ? '📥 รับเข้า' : '📤 เบิกออก'}</span></td>
+          <td><b>${row.item}</b></td>
+          <td style="font-weight: bold; color: ${isIn ? '#28a745' : '#dc3545'};">${isIn ? '+' : '-'}${row.qty}</td>
+          <td>${row.info}</td>
+          <td>${row.actor}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
   </script>
 </body>
