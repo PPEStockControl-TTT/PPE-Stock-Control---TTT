@@ -15,7 +15,6 @@
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .add-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin-top: 18px; }
     
-    /* กล่องพรีวิวราคาแบบเวอร์ชันเดิม */
     .price-preview-box { background: #eef6ff; border: 1px solid #b8daff; border-radius: 6px; padding: 12px 16px; margin-top: 12px; }
     .preview-row { display: flex; justify-content: space-between; font-size: 13px; color: #444; margin-bottom: 5px; }
     .preview-total { display: flex; justify-content: space-between; font-size: 15px; font-weight: bold; color: #0d47a1; border-top: 1px dashed #b8daff; padding-top: 8px; margin-top: 6px; }
@@ -41,7 +40,6 @@
 <body>
 
   <div class="container">
-    <!-- เมนูด้านบน -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
       <a href="index.html" style="text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 14px;">📊 ไปหน้าแดชบอร์ดสต็อก</a>
       <a href="../index.html" style="text-decoration: none; color: #666; font-size: 14px;">🦺 ไปหน้าเบิกของพนักงาน</a>
@@ -51,7 +49,6 @@
       <h2>📥 บันทึกรับอุปกรณ์เข้าคลัง (Stock In)</h2>
       <div id="alertBox" class="alert"></div>
 
-      <!-- ส่วนที่ 1: ข้อมูลบิล (กรอกครั้งเดียว) -->
       <div class="grid-2">
         <div>
           <label>1. เลขที่ PO / เลขที่ Invoice / บิลส่งของ *</label>
@@ -63,7 +60,6 @@
         </div>
       </div>
 
-      <!-- ส่วนที่ 2: ฟอร์มเลือกอุปกรณ์เพื่อเพิ่มลงบิล -->
       <div class="add-box">
         <h4 style="margin: 0 0 10px 0; color: #2c3e50;">➕ เลือกอุปกรณ์และจำนวนเพื่อเพิ่มลงบิล</h4>
         
@@ -75,7 +71,6 @@
         <label>จำนวนที่รับเข้า (ตามบิล/Invoice):</label>
         <input type="number" id="itemQty" min="1" placeholder="เช่น 50" oninput="updatePreview()">
 
-        <!-- กล่องพรีวิวราคาเหมือนเวอร์ชันเดิม -->
         <div class="price-preview-box">
           <div class="preview-row">
             <span>ราคาต่อหน่วย (Unit Price):</span>
@@ -94,7 +89,6 @@
         <button type="button" class="btn-add" onclick="addItemToBatch()">➕ เพิ่มรายการนี้ลงบิล</button>
       </div>
 
-      <!-- ส่วนที่ 3: ตารางสรุปรายการในบิลนี้ -->
       <h4 style="margin: 22px 0 5px 0;">📋 รายการอุปกรณ์ในบิลนี้ (<span id="itemCount">0</span> รายการ)</h4>
       <div style="overflow-x: auto;">
         <table>
@@ -114,7 +108,6 @@
         </table>
       </div>
 
-      <!-- ยอดรวมสุทธิของทั้งบิล -->
       <div class="total-banner">
         <div>
           <span style="font-size: 14px; color: #555;">💵 ยอดเงินรวมทั้งบิล (Invoice Total):</span>
@@ -126,7 +119,6 @@
       <button type="button" class="btn-submit" id="btnSubmit" onclick="submitBatchRestock()">💾 ยืนยันบันทึกรับเข้าคลังทั้งหมด</button>
     </div>
 
-    <!-- ส่วนที่ 4: ประวัติการรับของเข้าล่าสุด -->
     <div class="card">
       <h3>📋 ประวัติการรับของเข้าล่าสุด</h3>
       <div style="overflow-x: auto;">
@@ -155,7 +147,6 @@
     let ppeList = [];
     let invoiceItems = [];
 
-    // เปิดหน้ามาโหลดข้อมูลทันทีโดยไม่ต้องผ่านหน้ารหัสผ่าน
     window.onload = function() {
       loadAdminPPE();
       loadHistory();
@@ -230,7 +221,6 @@
         });
       }
 
-      // ล้างช่องเลือกอุปกรณ์
       document.getElementById('itemSelect').value = '';
       document.getElementById('itemQty').value = '';
       updatePreview();
