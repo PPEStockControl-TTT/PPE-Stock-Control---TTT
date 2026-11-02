@@ -16,6 +16,7 @@
     .btn-action.green { background: #28a745; }
     .btn-action:hover { opacity: 0.9; }
 
+    /* สถิติ 3 กล่อง */
     .stat-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
     .stat-box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 5px solid #007bff; }
     .stat-box.month { border-left-color: #ff9800; }
@@ -24,24 +25,31 @@
     .stat-title { font-size: 13px; color: #666; font-weight: 600; }
     .stat-value { font-size: 24px; font-weight: bold; margin-top: 8px; color: #1a1a1a; }
 
+    /* ตาราง */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border: 1px solid #e2e8f0; padding: 10px 12px; text-align: left; }
+    th { background: #f8fafc; color: #475569; font-weight: bold; }
+    tr:hover { background-color: #f8fafc; }
+
+    /* เครื่องมือค้นหา */
     .table-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 15px; margin-bottom: 15px; }
     .search-input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; width: 260px; font-size: 13px; }
     .filter-btn-group { display: flex; gap: 6px; }
     .filter-btn { padding: 6px 12px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
     .filter-btn.active { background: #1a73e8; color: white; border-color: #1a73e8; }
 
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { border: 1px solid #e2e8f0; padding: 10px 12px; text-align: left; }
-    th { background: #f8fafc; color: #475569; font-weight: bold; }
-    tr:hover { background-color: #f8fafc; }
+    /* ปุ่มอนุมัติจ่ายของ */
+    .btn-approve { background: #16a34a; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold; cursor: pointer; font-size: 12px; }
+    .btn-approve:hover { background: #15803d; }
 
+    /* ป้ายสถานะ */
     .status-badge { padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; white-space: nowrap; }
     .status-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
     .status-warning { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
     .status-safe { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-
     .badge-in { background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
     .badge-out { background: #f8d7da; color: #721c24; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+    .badge-pending { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
   </style>
 </head>
 <body>
@@ -55,6 +63,7 @@
   </header>
 
   <div class="container">
+    <!-- สถิติ 3 กล่อง -->
     <div class="stat-cards-grid">
       <div class="stat-box month">
         <div class="stat-title">📅 ยอดซื้อเข้าคลังเดือนนี้</div>
@@ -70,6 +79,33 @@
       </div>
     </div>
 
+    <!-- ส่วนที่ 1: รายการรอ Admin กดอนุมัติจ่ายของ -->
+    <div class="card" style="border-top: 4px solid #ff9800;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="color: #d97706;">🔔 รายการรอจ่ายของ (Pending Approval) - ต้องกดอนุมัติก่อนตัดสต็อก</h3>
+        <span id="pendingCountBadge" style="background: #ff9800; color: white; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 12px;">0 รายการ</span>
+      </div>
+      <div style="overflow-x: auto; margin-top: 12px;">
+        <table>
+          <thead>
+            <tr style="background: #fffbeb;">
+              <th>วัน-เวลาที่ขอเบิก</th>
+              <th>รหัสพนักงาน</th>
+              <th>ชื่อผู้ขอเบิก</th>
+              <th>แผนก</th>
+              <th>อุปกรณ์ที่ขอเบิก</th>
+              <th style="text-align: center;">จำนวน</th>
+              <th style="text-align: center; width: 140px;">การจัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="pendingTableBody">
+            <tr><td colspan="7" style="text-align: center; color: #888; padding: 15px;">ไม่มีรายการรออนุมัติ</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ส่วนที่ 2: สรุปสต็อกคงเหลือ -->
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3 style="color: #1e293b;">📋 สรุปสต็อกคงเหลือ & ตรวจสอบจุดสั่งซื้อขั้นต่ำ (Safety Stock)</h3>
@@ -108,8 +144,9 @@
       </div>
     </div>
 
+    <!-- ส่วนที่ 3: ประวัติธุรกรรมทั้งหมด -->
     <div class="card">
-      <h3>📋 ประวัติความเคลื่อนไหวล่าสุด (IN / OUT) พร้อมยอดเงิน</h3>
+      <h3>📋 ประวัติความเคลื่อนไหวล่าสุด (IN / OUT / PENDING)</h3>
       <div style="overflow-x: auto;">
         <table>
           <thead>
@@ -145,6 +182,14 @@
     }
 
     function loadDashboardData() {
+      // 1. ดึงรายการรออนุมัติ (PENDING)
+      fetch(`${API_URL}?action=getPendingRequests`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') renderPendingTable(res.data);
+        });
+
+      // 2. ดึงสถิติยอดเงินและสต็อก
       fetch(`${API_URL}?action=getAdminDashboardStats`)
         .then(res => res.json())
         .then(res => {
@@ -152,17 +197,66 @@
             document.getElementById('valThisMonth').innerText = `฿${formatMoney(res.thisMonthCost)}`;
             document.getElementById('valThisYear').innerText = `฿${formatMoney(res.thisYearCost)}`;
             document.getElementById('valCurrentStock').innerText = `฿${formatMoney(res.grandStockValue)}`;
-            
             allStockData = res.stockList || [];
             filterStockTable();
           }
         });
 
+      // 3. ดึงประวัติทั้งหมด
       fetch(`${API_URL}?action=getAllTransactions`)
         .then(res => res.json())
         .then(res => {
           if (res.status === 'success') renderTransactions(res.data);
         });
+    }
+
+    function renderPendingTable(list) {
+      const tbody = document.getElementById('pendingTableBody');
+      const badge = document.getElementById('pendingCountBadge');
+      tbody.innerHTML = '';
+      badge.innerText = `${list ? list.length : 0} รายการ`;
+
+      if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #888; padding: 15px;">ไม่มีรายการรออนุมัติจ่ายของ 🎉</td></tr>';
+        return;
+      }
+
+      list.forEach(req => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${req.date}</td>
+          <td><b>${req.empId}</b></td>
+          <td>${req.actor}</td>
+          <td>${req.department}</td>
+          <td><b>${req.item}</b></td>
+          <td style="text-align: center; font-weight: bold; color: #d97706;">${req.qty}</td>
+          <td style="text-align: center;">
+            <button class="btn-approve" onclick="approveRequest(${req.rowIndex}, '${req.actor}', '${req.item}', ${req.qty})">✅ จ่ายของ & ตัดสต็อก</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function approveRequest(rowIndex, name, item, qty) {
+      if (!confirm(`ยืนยันการจ่ายของให้: ${name}\nอุปกรณ์: ${item} จำนวน ${qty} ชิ้น?\n(ระบบจะทำการตัดสต็อกทันที)`)) {
+        return;
+      }
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'APPROVE_REQUEST', rowIndex: rowIndex })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'success') {
+          alert("✅ จ่ายของและตัดสต็อกเรียบร้อยแล้ว");
+          loadDashboardData();
+        } else {
+          alert("เกิดข้อผิดพลาด: " + res.message);
+        }
+      });
     }
 
     function setFilter(filterType, btn) {
@@ -184,7 +278,6 @@
 
       const filtered = allStockData.filter(item => {
         const matchKeyword = item.id.toLowerCase().includes(keyword) || item.name.toLowerCase().includes(keyword);
-        
         const bal = Number(item.balance) || 0;
         const min = Number(item.minStock) || 10;
         
@@ -241,11 +334,17 @@
       list.forEach(row => {
         const tr = document.createElement('tr');
         const isIn = row.type === 'IN';
+        const isPending = row.type === 'PENDING';
+
+        let badgeType = `<span class="badge-out">📤 เบิกจ่ายแล้ว</span>`;
+        if (isIn) badgeType = `<span class="badge-in">📥 รับเข้า</span>`;
+        if (isPending) badgeType = `<span class="badge-pending">⏳ รออนุมัติ</span>`;
+
         tr.innerHTML = `
           <td>${row.date}</td>
-          <td><span class="${isIn ? 'badge-in' : 'badge-out'}">${isIn ? '📥 รับเข้า' : '📤 เบิกออก'}</span></td>
+          <td>${badgeType}</td>
           <td><b>${row.item}</b></td>
-          <td style="font-weight: bold; text-align: center; color: ${isIn ? '#16a34a' : '#dc2626'};">${isIn ? '+' : '-'}${row.qty}</td>
+          <td style="font-weight: bold; text-align: center; color: ${isIn ? '#16a34a' : (isPending ? '#d97706' : '#dc2626')};">${isIn ? '+' : '-'}${row.qty}</td>
           <td style="font-weight: bold; text-align: right; color: #0d47a1;">฿${formatMoney(row.totalPrice)}</td>
           <td>${row.info}</td>
           <td>${row.actor}</td>
