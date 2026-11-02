@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - รอจ่ายของ</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #eef2f5; color: #333; }
+    header { background: white; padding: 15px 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; }
+    h2, h3 { margin: 0; color: #1a73e8; }
+    .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-btn { padding: 8px 14px; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: bold; color: #555; background: #e2e8f0; }
+    .nav-btn:hover { background: #cbd5e1; }
+    .nav-btn.active { background: #1a73e8; color: white; }
+    .nav-btn.green { background: #28a745; color: white; }
+    .nav-btn.orange { background: #ea580c; color: white; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th, td { border: 1px solid #e2e8f0; padding: 10px 12px; text-align: left; }
+    th { background: #f8fafc; color: #475569; font-weight: bold; }
+    tr:hover { background-color: #f8fafc; }
+
+    .btn-approve { background: #16a34a; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold; cursor: pointer; font-size: 12px; }
+    .btn-approve:hover { background: #15803d; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>📊 PPE Stock Control (Admin)</h2>
+    <div class="nav-links">
+      <a href="index.html" class="nav-btn">📋 สต็อกคงเหลือ</a>
+      <a href="pending.html" class="nav-btn active orange">🔔 รอจ่ายของ</a>
+      <a href="history.html" class="nav-btn">📜 ประวัติ</a>
+      <a href="restock.html" class="nav-btn green">📥 รับเข้า</a>
+      <a href="../index.html" class="nav-btn" style="background: #334155; color: white;">🦺 หน้าเบิก</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="color: #ea580c;">🔔 รายการรอจ่ายของ (Pending Approvals)</h3>
+        <button onclick="loadPendingRequests()" style="padding: 6px 12px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">🔄 อัปเดต</button>
+      </div>
+      <p style="font-size: 13px; color: #64748b; margin-top: -5px;">*ยอดสต็อกจะยังไม่ถูกตัด จนกว่า Admin จะกดปุ่มจ่ายของ</p>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr style="background: #fff7ed;">
+              <th>วัน-เวลา</th>
+              <th>รหัสพนักงาน</th>
+              <th>ชื่อผู้เบิก</th>
+              <th>แผนก</th>
+              <th>อุปกรณ์</th>
+              <th style="text-align: center;">จำนวน</th>
+              <th style="text-align: center; width: 140px;">การจัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="pendingTableBody">
+            <tr><td colspan="7" style="text-align: center; color: #888; padding: 25px;">กำลังโหลดข้อมูล...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
+
+    window.onload = function() { loadPendingRequests(); };
+
+    function loadPendingRequests() {
+      fetch(`${API_URL}?action=getPendingRequests`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') renderPendingTable(res.data);
+        });
+    }
+
+    function renderPendingTable(list) {
+      const tbody = document.getElementById('pendingTableBody');
+      tbody.innerHTML = '';
+
+      if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #888; padding: 20px;">ไม่มีรายการรอจ่ายของ 🎉</td></tr>';
+        return;
+      }
+
+      list.forEach(req => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${req.date}</td>
+          <td><b>${req.empId}</b></td>
+          <td>${req.actor}</td>
+          <td>${req.department}</td>
+          <td><b>${req.item}</b></td>
+          <td style="text-align: center; font-weight: bold; color: #ea580c;">${req.qty}</td>
+          <td style="text-align: center;">
+            <button class="btn-approve" onclick="approveRequest(${req.rowIndex}, '${req.actor}', '${req.item}', ${req.qty})">✅ จ่าย & ตัดสต็อก</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function approveRequest(rowIndex, name, item, qty) {
+      if (!confirm(`ยืนยันการจ่ายของให้: ${name}\nอุปกรณ์: ${item} (${qty} ชิ้น)?\n(ระบบจะตัดยอดสต็อกทันที)`)) {
+        return;
+      }
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'APPROVE_REQUEST', rowIndex: rowIndex })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'success') {
+          alert("✅ จ่ายของและตัดสต็อกแล้ว");
+          loadPendingRequests();
+        } else {
+          alert("เกิดข้อผิดพลาด: " + res.message);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
