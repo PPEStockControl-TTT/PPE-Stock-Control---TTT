@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - ประวัติรายการ</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #eef2f5; color: #333; }
+    header { background: white; padding: 15px 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; }
+    h2, h3 { margin: 0; color: #1a73e8; }
+    .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-btn { padding: 8px 14px; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: bold; color: #555; background: #e2e8f0; }
+    .nav-btn:hover { background: #cbd5e1; }
+    .nav-btn.active { background: #1a73e8; color: white; }
+    .nav-btn.green { background: #28a745; color: white; }
+    .nav-btn.orange { background: #ea580c; color: white; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th, td { border: 1px solid #e2e8f0; padding: 10px 12px; text-align: left; }
+    th { background: #f8fafc; color: #475569; font-weight: bold; }
+    tr:hover { background-color: #f8fafc; }
+
+    .badge-in { background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+    .badge-out { background: #f8d7da; color: #721c24; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+    .badge-pending { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>📊 PPE Stock Control (Admin)</h2>
+    <div class="nav-links">
+      <a href="index.html" class="nav-btn">📋 สต็อกคงเหลือ</a>
+      <a href="pending.html" class="nav-btn orange">🔔 รอจ่ายของ</a>
+      <a href="history.html" class="nav-btn active">📜 ประวัติ</a>
+      <a href="restock.html" class="nav-btn green">📥 รับเข้า</a>
+      <a href="../index.html" class="nav-btn" style="background: #334155; color: white;">🦺 หน้าเบิก</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="color: #1e293b;">📜 ประวัติรายการความเคลื่อนไหวทั้งหมด</h3>
+        <button onclick="loadHistoryData()" style="padding: 6px 12px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">🔄 อัปเดต</button>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>วัน-เวลา</th>
+              <th>ประเภท</th>
+              <th>อุปกรณ์</th>
+              <th style="text-align: center;">จำนวน</th>
+              <th style="text-align: right;">มูลค่า (บาท)</th>
+              <th>PO / แผนก</th>
+              <th>ผู้บันทึก/ผู้เบิก</th>
+            </tr>
+          </thead>
+          <tbody id="transTable">
+            <tr><td colspan="7" style="text-align: center; color: #888; padding: 25px;">กำลังโหลดประวัติ...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
+
+    window.onload = function() { loadHistoryData(); };
+
+    function formatMoney(amount) {
+      return Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function loadHistoryData() {
+      fetch(`${API_URL}?action=getAllTransactions`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') renderTransactions(res.data);
+        });
+    }
+
+    function renderTransactions(list) {
+      const tbody = document.getElementById('transTable');
+      tbody.innerHTML = '';
+
+      if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #888; padding: 20px;">ไม่มีประวัติรายการ</td></tr>';
+        return;
+      }
+
+      list.forEach(row => {
+        const tr = document.createElement('tr');
+        const isIn = row.type === 'IN';
+        const isPending = row.type === 'PENDING';
+
+        let badgeType = `<span class="badge-out">📤 เบิกออก</span>`;
+        if (isIn) badgeType = `<span class="badge-in">📥 รับเข้า</span>`;
+        if (isPending) badgeType = `<span class="badge-pending">⏳ รอจ่าย</span>`;
+
+        tr.innerHTML = `
+          <td>${row.date}</td>
+          <td>${badgeType}</td>
+          <td><b>${row.item}</b></td>
+          <td style="font-weight: bold; text-align: center; color: ${isIn ? '#16a34a' : (isPending ? '#ea580c' : '#dc2626')};">${isIn ? '+' : '-'}${row.qty}</td>
+          <td style="font-weight: bold; text-align: right; color: #0d47a1;">฿${formatMoney(row.totalPrice)}</td>
+          <td>${row.info}</td>
+          <td>${row.actor}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>
