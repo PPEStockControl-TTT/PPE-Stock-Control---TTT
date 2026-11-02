@@ -3,18 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - PPE Stock Control</title>
+  <title>Admin - สต็อกคงเหลือ</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #eef2f5; color: #333; }
     header { background: white; padding: 15px 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; }
     h2, h3 { margin: 0; color: #1a73e8; }
     .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-    .card { background: white; padding: 20px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
     
-    .nav-actions { display: flex; gap: 10px; }
-    .btn-action { padding: 8px 14px; background: #007bff; color: white; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold; }
-    .btn-action.green { background: #28a745; }
-    .btn-action:hover { opacity: 0.9; }
+    /* เมนูลิงก์สลับหน้า */
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-btn { padding: 8px 14px; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: bold; color: #555; background: #e2e8f0; }
+    .nav-btn:hover { background: #cbd5e1; }
+    .nav-btn.active { background: #1a73e8; color: white; }
+    .nav-btn.green { background: #28a745; color: white; }
+    .nav-btn.orange { background: #ea580c; color: white; }
 
     /* สถิติ 3 กล่อง */
     .stat-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
@@ -25,57 +28,38 @@
     .stat-title { font-size: 13px; color: #666; font-weight: 600; }
     .stat-value { font-size: 24px; font-weight: bold; margin-top: 8px; color: #1a1a1a; }
 
-    /* แท็บเมนูหลักแบบสั้น */
-    .tab-navigation { display: flex; gap: 4px; border-bottom: 2px solid #cbd5e1; }
-    .tab-btn { background: #e2e8f0; border: none; outline: none; padding: 12px 20px; font-size: 14px; font-weight: bold; color: #64748b; cursor: pointer; border-radius: 8px 8px 0 0; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
-    .tab-btn:hover { background: #cbd5e1; color: #334155; }
-    .tab-btn.active { background: white; color: #1a73e8; border-top: 3px solid #1a73e8; border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; margin-bottom: -2px; }
-
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* ป้ายตัวเลขเตือน */
-    .badge-counter { background: #ea580c; color: white; padding: 2px 7px; border-radius: 12px; font-size: 11px; }
-
     /* ตาราง */
     table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
     th, td { border: 1px solid #e2e8f0; padding: 10px 12px; text-align: left; }
     th { background: #f8fafc; color: #475569; font-weight: bold; }
     tr:hover { background-color: #f8fafc; }
 
-    /* แถบค้นหาและฟิลเตอร์ */
     .table-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
     .search-input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; width: 240px; font-size: 13px; }
     .filter-btn-group { display: flex; gap: 6px; }
     .filter-btn { padding: 6px 12px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
     .filter-btn.active { background: #1a73e8; color: white; border-color: #1a73e8; }
 
-    /* ปุ่มอนุมัติจ่ายของ */
-    .btn-approve { background: #16a34a; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold; cursor: pointer; font-size: 12px; }
-    .btn-approve:hover { background: #15803d; }
-
-    /* ป้ายสถานะ */
     .status-badge { padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; white-space: nowrap; }
     .status-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
     .status-warning { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
     .status-safe { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-    .badge-in { background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-    .badge-out { background: #f8d7da; color: #721c24; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-    .badge-pending { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
   </style>
 </head>
 <body>
 
   <header>
-    <h2>📊 PPE Stock Control (Admin Dashboard)</h2>
-    <div class="nav-actions">
-      <a href="restock.html" class="btn-action green">📥 รับเข้า</a>
-      <a href="../index.html" class="btn-action">🦺 หน้าเบิก</a>
+    <h2>📊 PPE Stock Control (Admin)</h2>
+    <div class="nav-links">
+      <a href="index.html" class="nav-btn active">📋 สต็อกคงเหลือ</a>
+      <a href="pending.html" class="nav-btn orange">🔔 รอจ่ายของ</a>
+      <a href="history.html" class="nav-btn">📜 ประวัติ</a>
+      <a href="restock.html" class="nav-btn green">📥 รับเข้า</a>
+      <a href="../index.html" class="nav-btn" style="background: #334155; color: white;">🦺 หน้าเบิก</a>
     </div>
   </header>
 
   <div class="container">
-    <!-- กล่องสรุปสถิติ 3 กล่อง -->
     <div class="stat-cards-grid">
       <div class="stat-box month">
         <div class="stat-title">📅 ซื้อเข้าเดือนนี้</div>
@@ -91,115 +75,41 @@
       </div>
     </div>
 
-    <!-- แถบเมนูภาษาไทยแบบสั้น (Tabs) -->
-    <div class="tab-navigation">
-      <button class="tab-btn active" onclick="switchTab('tabStock', this)">
-        📋 สต็อกคงเหลือ
-      </button>
-      <button class="tab-btn" onclick="switchTab('tabPending', this)">
-        🔔 รอจ่ายของ <span class="badge-counter" id="badgePendingCount">0</span>
-      </button>
-      <button class="tab-btn" onclick="switchTab('tabHistory', this)">
-        📜 ประวัติรายการ
-      </button>
-    </div>
-
-    <!-- บล็อกแสดงเนื้อหาแท็บ -->
     <div class="card">
-      
-      <!-- แท็บที่ 1: สต็อกคงเหลือ -->
-      <div id="tabStock" class="tab-content active">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3 style="color: #1e293b;">📋 สต็อกคงเหลือ & จุดสั่งซื้อ</h3>
-          <button onclick="loadDashboardData()" style="padding: 6px 12px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">🔄 อัปเดต</button>
-        </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="color: #1e293b;">📋 สรุปสต็อกคงเหลือ & จุดสั่งซื้อ</h3>
+        <button onclick="loadStockData()" style="padding: 6px 12px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">🔄 อัปเดต</button>
+      </div>
 
-        <div class="table-toolbar">
-          <input type="text" id="searchInput" class="search-input" placeholder="🔍 ค้นหารหัส หรือชื่อ..." oninput="filterStockTable()">
-          <div class="filter-btn-group">
-            <button class="filter-btn active" onclick="setFilter('ALL', this)">ทั้งหมด</button>
-            <button class="filter-btn" onclick="setFilter('DANGER', this)" style="color: #b91c1c;">🔴 สั่งด่วน (&le; Min)</button>
-            <button class="filter-btn" onclick="setFilter('WARNING', this)" style="color: #b45309;">🟡 ใกล้หมด</button>
-            <button class="filter-btn" onclick="setFilter('SAFE', this)" style="color: #15803d;">🟢 ปกติ</button>
-          </div>
-        </div>
-
-        <div style="overflow-x: auto;">
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 70px; text-align: center;">รหัส</th>
-                <th>อุปกรณ์ PPE</th>
-                <th style="width: 80px; text-align: center;">รับเข้า</th>
-                <th style="width: 80px; text-align: center;">เบิกออก</th>
-                <th style="width: 80px; text-align: center;">คงเหลือ</th>
-                <th style="width: 90px; text-align: center; background: #f1f5f9;">เกณฑ์ (Min)</th>
-                <th style="width: 120px; text-align: right;">มูลค่ารวม</th>
-                <th style="width: 140px; text-align: center;">สถานะ</th>
-              </tr>
-            </thead>
-            <tbody id="stockTableBody">
-              <tr><td colspan="8" style="text-align: center; color: #888; padding: 25px;">กำลังโหลดข้อมูล...</td></tr>
-            </tbody>
-          </table>
+      <div class="table-toolbar">
+        <input type="text" id="searchInput" class="search-input" placeholder="🔍 ค้นหารหัส หรือชื่อ..." oninput="filterStockTable()">
+        <div class="filter-btn-group">
+          <button class="filter-btn active" onclick="setFilter('ALL', this)">ทั้งหมด</button>
+          <button class="filter-btn" onclick="setFilter('DANGER', this)" style="color: #b91c1c;">🔴 สั่งด่วน (&le; Min)</button>
+          <button class="filter-btn" onclick="setFilter('WARNING', this)" style="color: #b45309;">🟡 ใกล้หมด</button>
+          <button class="filter-btn" onclick="setFilter('SAFE', this)" style="color: #15803d;">🟢 ปกติ</button>
         </div>
       </div>
 
-      <!-- แท็บที่ 2: รอจ่ายของ -->
-      <div id="tabPending" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3 style="color: #ea580c;">🔔 รายการรอจ่ายของ (Pending)</h3>
-          <button onclick="loadDashboardData()" style="padding: 6px 12px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">🔄 อัปเดต</button>
-        </div>
-        <p style="font-size: 13px; color: #64748b; margin-top: -5px;">*ยอดสต็อกจะยังไม่ถูกตัด จนกว่า Admin จะกดปุ่มจ่ายของ</p>
-
-        <div style="overflow-x: auto;">
-          <table>
-            <thead>
-              <tr style="background: #fff7ed;">
-                <th>วัน-เวลา</th>
-                <th>รหัส</th>
-                <th>ชื่อผู้เบิก</th>
-                <th>แผนก</th>
-                <th>อุปกรณ์</th>
-                <th style="text-align: center;">จำนวน</th>
-                <th style="text-align: center; width: 130px;">การจัดการ</th>
-              </tr>
-            </thead>
-            <tbody id="pendingTableBody">
-              <tr><td colspan="7" style="text-align: center; color: #888; padding: 20px;">ไม่มีรายการรอจ่ายของ 🎉</td></tr>
-            </tbody>
-          </table>
-        </div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 70px; text-align: center;">รหัส</th>
+              <th>อุปกรณ์ PPE</th>
+              <th style="width: 80px; text-align: center;">รับเข้า</th>
+              <th style="width: 80px; text-align: center;">เบิกออก</th>
+              <th style="width: 80px; text-align: center;">คงเหลือ</th>
+              <th style="width: 90px; text-align: center; background: #f1f5f9;">เกณฑ์ (Min)</th>
+              <th style="width: 120px; text-align: right;">มูลค่ารวม</th>
+              <th style="width: 140px; text-align: center;">สถานะ</th>
+            </tr>
+          </thead>
+          <tbody id="stockTableBody">
+            <tr><td colspan="8" style="text-align: center; color: #888; padding: 25px;">กำลังโหลดข้อมูล...</td></tr>
+          </tbody>
+        </table>
       </div>
-
-      <!-- แท็บที่ 3: ประวัติรายการ -->
-      <div id="tabHistory" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3 style="color: #1e293b;">📜 ประวัติรายการทั้งหมด</h3>
-          <button onclick="loadDashboardData()" style="padding: 6px 12px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">🔄 อัปเดต</button>
-        </div>
-
-        <div style="overflow-x: auto;">
-          <table>
-            <thead>
-              <tr>
-                <th>วัน-เวลา</th>
-                <th>ประเภท</th>
-                <th>อุปกรณ์</th>
-                <th style="text-align: center;">จำนวน</th>
-                <th style="text-align: right;">มูลค่า (บาท)</th>
-                <th>PO / แผนก</th>
-                <th>ผู้บันทึก/ผู้เบิก</th>
-              </tr>
-            </thead>
-            <tbody id="transTable">
-              <tr><td colspan="7" style="text-align: center; color: #888; padding: 20px;">กำลังโหลดประวัติ...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
     </div>
   </div>
 
@@ -208,31 +118,13 @@
     let allStockData = [];
     let currentFilter = 'ALL';
 
-    window.onload = function() {
-      loadDashboardData();
-    };
-
-    function switchTab(tabId, btn) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-      btn.classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-    }
+    window.onload = function() { loadStockData(); };
 
     function formatMoney(amount) {
       return Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    function loadDashboardData() {
-      // 1. โหลดข้อมูลรายการรอจ่ายของ
-      fetch(`${API_URL}?action=getPendingRequests`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.status === 'success') renderPendingTable(res.data);
-        });
-
-      // 2. โหลดสต็อกและค่าใช้จ่าย
+    function loadStockData() {
       fetch(`${API_URL}?action=getAdminDashboardStats`)
         .then(res => res.json())
         .then(res => {
@@ -244,62 +136,6 @@
             filterStockTable();
           }
         });
-
-      // 3. โหลดประวัติทั้งหมด
-      fetch(`${API_URL}?action=getAllTransactions`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.status === 'success') renderTransactions(res.data);
-        });
-    }
-
-    function renderPendingTable(list) {
-      const tbody = document.getElementById('pendingTableBody');
-      const badge = document.getElementById('badgePendingCount');
-      tbody.innerHTML = '';
-      badge.innerText = list ? list.length : 0;
-
-      if (!list || list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #888; padding: 20px;">ไม่มีรายการรอจ่ายของ 🎉</td></tr>';
-        return;
-      }
-
-      list.forEach(req => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${req.date}</td>
-          <td><b>${req.empId}</b></td>
-          <td>${req.actor}</td>
-          <td>${req.department}</td>
-          <td><b>${req.item}</b></td>
-          <td style="text-align: center; font-weight: bold; color: #ea580c;">${req.qty}</td>
-          <td style="text-align: center;">
-            <button class="btn-approve" onclick="approveRequest(${req.rowIndex}, '${req.actor}', '${req.item}', ${req.qty})">✅ จ่าย & ตัดสต็อก</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function approveRequest(rowIndex, name, item, qty) {
-      if (!confirm(`ยืนยันการจ่ายของให้: ${name}\nอุปกรณ์: ${item} (${qty} ชิ้น)?\n(ระบบจะตัดยอดสต็อกทันที)`)) {
-        return;
-      }
-
-      fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ type: 'APPROVE_REQUEST', rowIndex: rowIndex })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.status === 'success') {
-          alert("✅ จ่ายของและตัดสต็อกแล้ว");
-          loadDashboardData();
-        } else {
-          alert("เกิดข้อผิดพลาด: " + res.message);
-        }
-      });
     }
 
     function setFilter(filterType, btn) {
@@ -360,37 +196,6 @@
           <td style="text-align: center; font-weight: bold; color: #475569; background: #f8fafc;">${min}</td>
           <td style="text-align: right; font-weight: bold; color: #2563eb;">฿${formatMoney(item.totalValue)}</td>
           <td style="text-align: center;">${badgeHtml}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function renderTransactions(list) {
-      const tbody = document.getElementById('transTable');
-      tbody.innerHTML = '';
-
-      if (!list || list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #888; padding: 20px;">ไม่มีประวัติรายการ</td></tr>';
-        return;
-      }
-
-      list.forEach(row => {
-        const tr = document.createElement('tr');
-        const isIn = row.type === 'IN';
-        const isPending = row.type === 'PENDING';
-
-        let badgeType = `<span class="badge-out">📤 เบิกออก</span>`;
-        if (isIn) badgeType = `<span class="badge-in">📥 รับเข้า</span>`;
-        if (isPending) badgeType = `<span class="badge-pending">⏳ รอจ่าย</span>`;
-
-        tr.innerHTML = `
-          <td>${row.date}</td>
-          <td>${badgeType}</td>
-          <td><b>${row.item}</b></td>
-          <td style="font-weight: bold; text-align: center; color: ${isIn ? '#16a34a' : (isPending ? '#ea580c' : '#dc2626')};">${isIn ? '+' : '-'}${row.qty}</td>
-          <td style="font-weight: bold; text-align: right; color: #0d47a1;">฿${formatMoney(row.totalPrice)}</td>
-          <td>${row.info}</td>
-          <td>${row.actor}</td>
         `;
         tbody.appendChild(tr);
       });
