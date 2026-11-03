@@ -13,7 +13,7 @@
       color: #333;
     }
 
-    /* 1. ส่วนครอบหน้า Login (กึ่งกลางจอ) */
+    /* 1. ส่วนหน้า Login พนักงาน */
     .login-wrapper {
       min-height: 100vh;
       display: flex;
@@ -87,7 +87,7 @@
     .admin-link { display: inline-block; margin-top: 18px; font-size: 12px; color: #64748b; text-decoration: none; }
     .admin-link:hover { color: #0f172a; }
 
-    /* 2. ส่วนหน้าเลือกเบิกของ (ขยายเต็มหน้าจอ Full Screen) */
+    /* 2. หน้าจอเบิกของเต็มหน้าจอ */
     .store-layout {
       display: none;
       min-height: 100vh;
@@ -103,6 +103,22 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.06);
     }
     .store-brand { font-size: 18px; font-weight: bold; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+    .nav-user-actions { display: flex; align-items: center; gap: 12px; }
+    
+    .btn-history-nav {
+      background: #0284c7;
+      color: white;
+      text-decoration: none;
+      padding: 7px 15px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-history-nav:hover { background: #0369a1; }
+
     .emp-info-pill {
       background: #e2e8f0;
       padding: 6px 14px;
@@ -146,7 +162,7 @@
       background: white;
     }
 
-    /* การ์ดอุปกรณ์ PPE แบบเต็มความกว้าง */
+    /* Grid รายการอุปกรณ์ */
     .ppe-grid-full {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -156,7 +172,7 @@
     .ppe-card {
       background: white;
       border: 1px solid #e2e8f0;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 16px;
       display: flex;
       flex-direction: column;
@@ -165,9 +181,33 @@
       transition: 0.2s;
     }
     .ppe-card:hover {
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       border-color: #cbd5e1;
     }
+    
+    /* กล่องรูปภาพอุปกรณ์ */
+    .img-box {
+      width: 100%;
+      height: 160px;
+      background: #f8fafc;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 12px;
+      overflow: hidden;
+      border: 1px solid #f1f5f9;
+    }
+    .img-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .no-img {
+      font-size: 44px;
+      color: #cbd5e1;
+    }
+
     .ppe-id { font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px; }
     .ppe-title { font-size: 14px; font-weight: bold; color: #1e293b; line-height: 1.4; margin-bottom: 12px; }
 
@@ -203,7 +243,6 @@
       background: white;
     }
 
-    /* แถบยึดปุ่มส่งคำขอด้านล่าง (Sticky Bottom Bar) */
     .submit-bar {
       position: sticky;
       bottom: 20px;
@@ -233,7 +272,7 @@
 </head>
 <body>
 
-  <!-- 1. หน้าจอ Login พนักงาน -->
+  <!-- 1. ส่วนหน้า Login พนักงาน -->
   <div class="login-wrapper" id="loginWrapper">
     <div class="login-card">
       <div class="icon-wrapper">
@@ -263,15 +302,19 @@
     </div>
   </div>
 
-  <!-- 2. หน้าจอเลือกเบิกอุปกรณ์แบบเต็มหน้าจอ (Full Screen) -->
+  <!-- 2. ส่วนหน้าจอเบิกอุปกรณ์ -->
   <div class="store-layout" id="storeLayout">
     <header class="store-navbar">
       <div class="store-brand">
         <span>🦺</span> PPE Store - รายการเบิกอุปกรณ์
       </div>
-      <div class="emp-info-pill">
-        ผู้เบิก: <b id="lblEmpName">-</b> (<span id="lblEmpDept">-</span>)
-        <button class="btn-logout" onclick="logoutEmp()">ออกจากระบบ</button>
+      <div class="nav-user-actions">
+        <!-- ปุ่มกดไปหน้าประวัติการเบิก -->
+        <a href="emp-history.html" class="btn-history-nav">📜 ประวัติการเบิกของฉัน</a>
+        <div class="emp-info-pill">
+          ผู้เบิก: <b id="lblEmpName">-</b> (<span id="lblEmpDept">-</span>)
+          <button class="btn-logout" onclick="logoutEmp()">ออกจากระบบ</button>
+        </div>
       </div>
     </header>
 
@@ -288,7 +331,6 @@
         <div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">กำลังโหลดรายการอุปกรณ์...</div>
       </div>
 
-      <!-- แถบลอยสำหรับยืนยันการส่งคำขอ -->
       <div class="submit-bar">
         <div>
           <div style="font-size: 14px; font-weight: bold; color: #1e293b;">ยอดที่เลือกเบิก: <span id="summaryCount" style="color: #0284c7;">0</span> รายการ</div>
@@ -306,6 +348,14 @@
     let currentEmployee = null;
     let ppeItems = [];
     let selectedQty = {};
+
+    window.onload = function() {
+      const savedEmp = sessionStorage.getItem("currentEmp");
+      if (savedEmp) {
+        currentEmployee = JSON.parse(savedEmp);
+        showStoreView();
+      }
+    };
 
     function handleEmpLogin() {
       const empId = document.getElementById('empIdInput').value.trim();
@@ -327,12 +377,8 @@
 
           if (res.status === 'success' && res.employee) {
             currentEmployee = res.employee;
-            document.getElementById('lblEmpName').innerText = currentEmployee.name;
-            document.getElementById('lblEmpDept').innerText = currentEmployee.department;
-
-            document.getElementById('loginWrapper').style.display = 'none';
-            document.getElementById('storeLayout').style.display = 'flex';
-            loadPPEList();
+            sessionStorage.setItem("currentEmp", JSON.stringify(currentEmployee));
+            showStoreView();
           } else {
             alert(res.message || "ไม่พบรหัสพนักงานนี้ในระบบ");
           }
@@ -344,7 +390,16 @@
         });
     }
 
+    function showStoreView() {
+      document.getElementById('lblEmpName').innerText = currentEmployee.name;
+      document.getElementById('lblEmpDept').innerText = currentEmployee.department;
+      document.getElementById('loginWrapper').style.display = 'none';
+      document.getElementById('storeLayout').style.display = 'flex';
+      loadPPEList();
+    }
+
     function logoutEmp() {
+      sessionStorage.removeItem("currentEmp");
       currentEmployee = null;
       selectedQty = {};
       document.getElementById('empIdInput').value = '';
@@ -405,11 +460,22 @@
       list.forEach(item => {
         const originalIndex = ppeItems.findIndex(p => p.id === item.id);
         const qty = selectedQty[originalIndex] || 0;
+        
+        // รองรับทั้ง URL รูปภาพตรง และ Google Drive File ID
+        let imgHtml = `<span class="no-img">🦺</span>`;
+        if (item.imageId && String(item.imageId).trim() !== "") {
+          const rawId = String(item.imageId).trim();
+          const imgUrl = rawId.startsWith("http") 
+            ? rawId 
+            : `https://lh3.googleusercontent.com/d/${rawId}`;
+          imgHtml = `<img src="${imgUrl}" alt="${item.name}" onerror="this.parentElement.innerHTML='<span class=\\'no-img\\'>🦺</span>'">`;
+        }
 
         const card = document.createElement('div');
         card.className = 'ppe-card';
         card.innerHTML = `
           <div>
+            <div class="img-box">${imgHtml}</div>
             <div class="ppe-id">รหัส: ${item.id}</div>
             <div class="ppe-title">${item.name}</div>
           </div>
@@ -466,7 +532,9 @@
         btn.innerText = "📤 ส่งคำขอเบิกอุปกรณ์";
         if (res.status === 'success') {
           alert("✅ ส่งคำขอเบิกสำเร็จแล้ว! กรุณารอ Admin ตรวจสอบและกดจ่ายของ");
-          logoutEmp();
+          selectedQty = {};
+          renderGrid(ppeItems);
+          updateSummary();
         } else {
           alert("เกิดข้อผิดพลาด: " + res.message);
         }
