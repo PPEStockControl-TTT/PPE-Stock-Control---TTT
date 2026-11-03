@@ -3,199 +3,284 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - สต็อกคงเหลือ</title>
+  <title>Dashboard ควบคุมสต็อก PPE</title>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #eef2f5; color: #333; }
-    header { background: white; padding: 15px 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; }
-    h2, h3 { margin: 0; color: #1a73e8; }
-    .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f0f2f5; color: #333; }
     
-    /* เมนูลิงก์สลับหน้า */
-    .nav-links { display: flex; gap: 8px; align-items: center; }
-    .nav-btn { padding: 8px 14px; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: bold; color: #555; background: #e2e8f0; }
-    .nav-btn:hover { background: #cbd5e1; }
-    .nav-btn.active { background: #1a73e8; color: white; }
-    .nav-btn.green { background: #28a745; color: white; }
-    .nav-btn.orange { background: #ea580c; color: white; }
+    /* Top Header Bar */
+    header { background: #3b82f6; color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: bold; }
+    .header-user { display: flex; align-items: center; gap: 15px; font-size: 13px; }
+    .btn-portal { background: rgba(255,255,255,0.2); color: white; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+    .btn-portal:hover { background: rgba(255,255,255,0.3); }
 
-    /* สถิติ 3 กล่อง */
-    .stat-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
-    .stat-box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 5px solid #007bff; }
-    .stat-box.month { border-left-color: #ff9800; }
-    .stat-box.year { border-left-color: #4caf50; }
-    .stat-box.stock { border-left-color: #2196f3; }
-    .stat-title { font-size: 13px; color: #666; font-weight: 600; }
-    .stat-value { font-size: 24px; font-weight: bold; margin-top: 8px; color: #1a1a1a; }
+    /* Layout */
+    .app-wrapper { display: flex; min-height: calc(100vh - 56px); }
+    
+    /* Sidebar */
+    .sidebar { width: 220px; background: white; border-right: 1px solid #e2e8f0; padding: 20px 10px; flex-shrink: 0; }
+    .menu-title { font-size: 11px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; padding-left: 10px; }
+    .side-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: #475569; text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 8px; margin-bottom: 4px; transition: 0.2s; }
+    .side-link:hover { background: #f1f5f9; color: #1e293b; }
+    .side-link.active { background: #3b82f6; color: white; }
 
-    /* ตาราง */
-    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-    th, td { border: 1px solid #e2e8f0; padding: 10px 12px; text-align: left; }
-    th { background: #f8fafc; color: #475569; font-weight: bold; }
-    tr:hover { background-color: #f8fafc; }
+    /* Main Area */
+    .main-content { flex-grow: 1; padding: 24px 30px; overflow-x: hidden; }
+    
+    /* Alert Banner */
+    .announce-box { background: #fef9c3; border: 1px solid #fef08a; padding: 12px 18px; border-radius: 8px; font-size: 13px; color: #854d0e; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
 
-    .table-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
-    .search-input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; width: 240px; font-size: 13px; }
-    .filter-btn-group { display: flex; gap: 6px; }
-    .filter-btn { padding: 6px 12px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
-    .filter-btn.active { background: #1a73e8; color: white; border-color: #1a73e8; }
+    /* Dashboard Header */
+    .dash-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 18px; }
+    .dash-title { margin: 0; font-size: 24px; color: #1e3a8a; font-weight: bold; }
+    .dash-subtitle { font-size: 12px; color: #64748b; margin-top: 4px; }
+    .btn-refresh { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .btn-refresh:hover { background: #2563eb; }
 
-    .status-badge { padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; white-space: nowrap; }
-    .status-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
-    .status-warning { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
-    .status-safe { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    /* KPI Summary Cards */
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .kpi-card { background: white; border-radius: 8px; padding: 14px 16px; border-left: 4px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .kpi-card.c-blue { border-left-color: #3b82f6; }
+    .kpi-card.c-green { border-left-color: #10b981; }
+    .kpi-card.c-sky { border-left-color: #0284c7; }
+    .kpi-card.c-yellow { border-left-color: #f59e0b; }
+    .kpi-card.c-red { border-left-color: #ef4444; }
+    .kpi-title { font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 8px; }
+    .kpi-val { font-size: 22px; font-weight: 800; color: #0f172a; }
+    .kpi-unit { font-size: 12px; font-weight: normal; color: #475569; }
+
+    /* Table Section */
+    .panel-card { background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 24px; overflow: hidden; }
+    .panel-title { padding: 14px 20px; font-size: 15px; font-weight: bold; color: #1e40af; border-bottom: 1px solid #f1f5f9; background: white; margin: 0; }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #3b82f6; color: white; padding: 10px 16px; text-align: left; font-weight: 600; font-size: 13px; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; }
+    tr:last-child td { border-bottom: none; }
+    .badge-urgent { background: #fce7f3; color: #be185d; border: 1px solid #fbcfe8; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
+
+    /* Quick Action Menu */
+    .quick-title { font-size: 15px; font-weight: bold; color: #1e3a8a; margin: 0 0 12px 0; }
+    .quick-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .quick-btn { display: block; text-decoration: none; color: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); transition: 0.2s; }
+    .quick-btn:hover { opacity: 0.95; transform: translateY(-2px); }
+    .quick-btn.b-blue { background: #2563eb; }
+    .quick-btn.b-green { background: #059669; }
+    .quick-btn.b-gold { background: #926a15; }
+    .quick-btn-h { font-size: 16px; font-weight: bold; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .quick-btn-sub { font-size: 12px; opacity: 0.88; }
   </style>
 </head>
 <body>
 
+  <!-- แถบด้านบน -->
   <header>
-    <h2>📊 PPE Stock Control (Admin)</h2>
-    <div class="nav-links">
-      <a href="index.html" class="nav-btn active">📋 สต็อกคงเหลือ</a>
-      <a href="pending.html" class="nav-btn orange">🔔 รอจ่ายของ</a>
-      <a href="history.html" class="nav-btn">📜 ประวัติ</a>
-      <a href="restock.html" class="nav-btn green">📥 รับเข้า</a>
-      <a href="../index.html" class="nav-btn" style="background: #334155; color: white;">🦺 หน้าเบิก</a>
+    <div class="brand">
+      <span>🦺</span> PPE Stock Control
+    </div>
+    <div class="header-user">
+      <span>ผู้ดูแลระบบ: <b>Admin Safety</b></span>
+      <a href="../index.html" class="btn-portal">ออกจากระบบ</a>
     </div>
   </header>
 
-  <div class="container">
-    <div class="stat-cards-grid">
-      <div class="stat-box month">
-        <div class="stat-title">📅 ซื้อเข้าเดือนนี้</div>
-        <div class="stat-value" id="valThisMonth">฿0.00</div>
-      </div>
-      <div class="stat-box year">
-        <div class="stat-title">🗓️ ซื้อเข้าปีนี้</div>
-        <div class="stat-value" id="valThisYear">฿0.00</div>
-      </div>
-      <div class="stat-box stock">
-        <div class="stat-title">📦 มูลค่าคงคลัง</div>
-        <div class="stat-value" id="valCurrentStock">฿0.00</div>
-      </div>
-    </div>
+  <div class="app-wrapper">
+    <!-- แถบเมนูด้านซ้าย -->
+    <aside class="sidebar">
+      <div class="menu-title">เมนูหลัก</div>
+      <a href="index.html" class="side-link active">📊 Dashboard</a>
+      <a href="restock.html" class="side-link">📥 รับเข้าสต็อก</a>
+      <a href="pending.html" class="side-link">📋 เบิกจ่าย PPE</a>
+      <a href="history.html" class="side-link">📜 ประวัติรายการ</a>
+      <a href="../index.html" class="side-link" style="margin-top: 20px; color: #0284c7;">🦺 หน้าเบิกพนักงาน</a>
+    </aside>
 
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="color: #1e293b;">📋 สรุปสต็อกคงเหลือ & จุดสั่งซื้อ</h3>
-        <button onclick="loadStockData()" style="padding: 6px 12px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">🔄 อัปเดต</button>
+    <!-- เนื้อหาหลัก Dashboard -->
+    <main class="main-content">
+      
+      <!-- แถบแจ้งเตือนด้านบน -->
+      <div class="announce-box">
+        <span>🔔</span>
+        <span><b>ระบบควบคุมสต็อก PPE:</b> ตรวจสอบยอดคงเหลือและดำเนินการอนุมัติการเบิกจ่ายตามจุดสั่งซื้อขั้นต่ำ</span>
       </div>
 
-      <div class="table-toolbar">
-        <input type="text" id="searchInput" class="search-input" placeholder="🔍 ค้นหารหัส หรือชื่อ..." oninput="filterStockTable()">
-        <div class="filter-btn-group">
-          <button class="filter-btn active" onclick="setFilter('ALL', this)">ทั้งหมด</button>
-          <button class="filter-btn" onclick="setFilter('DANGER', this)" style="color: #b91c1c;">🔴 สั่งด่วน (&le; Min)</button>
-          <button class="filter-btn" onclick="setFilter('WARNING', this)" style="color: #b45309;">🟡 ใกล้หมด</button>
-          <button class="filter-btn" onclick="setFilter('SAFE', this)" style="color: #15803d;">🟢 ปกติ</button>
+      <!-- หัวข้อ Dashboard และเวลาอัปเดต -->
+      <div class="dash-header">
+        <div>
+          <h1 class="dash-title">Dashboard ควบคุมสต็อก PPE</h1>
+          <div class="dash-subtitle" id="lastUpdateTime">ข้อมูลอัปเดต ณ กำลังโหลด...</div>
+        </div>
+        <button class="btn-refresh" onclick="loadDashboard()">🔄 รีเฟรชข้อมูล</button>
+      </div>
+
+      <!-- สรุป 7 การ์ดตัวเลข (KPI Cards) -->
+      <div class="kpi-row">
+        <div class="kpi-card c-blue">
+          <div class="kpi-title">รายการ PPE ทั้งหมด</div>
+          <div class="kpi-val" id="kpiTotalItems">0</div>
+        </div>
+        <div class="kpi-card c-green">
+          <div class="kpi-title">สต็อกคงเหลือรวม</div>
+          <div class="kpi-val" id="kpiTotalStock">0</div>
+        </div>
+        <div class="kpi-card c-sky">
+          <div class="kpi-title">มูลค่าสต็อกคงเหลือ</div>
+          <div class="kpi-val" id="kpiTotalValue">0.00 <span class="kpi-unit">บาท</span></div>
+        </div>
+        <div class="kpi-card c-yellow">
+          <div class="kpi-title">ใกล้จุดสั่งซื้อ</div>
+          <div class="kpi-val" id="kpiNearMin">0</div>
+        </div>
+        <div class="kpi-card c-red">
+          <div class="kpi-title">ต้องสั่งซื้อด่วน</div>
+          <div class="kpi-val" id="kpiUrgentReorder" style="color: #ef4444;">0</div>
+        </div>
+        <div class="kpi-card c-yellow">
+          <div class="kpi-title">รอดำเนินการจ่าย</div>
+          <div class="kpi-val" id="kpiPendingCount">0</div>
+        </div>
+        <div class="kpi-card c-red">
+          <div class="kpi-title">สินค้าหมดสต็อก</div>
+          <div class="kpi-val" id="kpiOutOfStock" style="color: #ef4444;">0</div>
         </div>
       </div>
 
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 70px; text-align: center;">รหัส</th>
-              <th>อุปกรณ์ PPE</th>
-              <th style="width: 80px; text-align: center;">รับเข้า</th>
-              <th style="width: 80px; text-align: center;">เบิกออก</th>
-              <th style="width: 80px; text-align: center;">คงเหลือ</th>
-              <th style="width: 90px; text-align: center; background: #f1f5f9;">เกณฑ์ (Min)</th>
-              <th style="width: 120px; text-align: right;">มูลค่ารวม</th>
-              <th style="width: 140px; text-align: center;">สถานะ</th>
-            </tr>
-          </thead>
-          <tbody id="stockTableBody">
-            <tr><td colspan="8" style="text-align: center; color: #888; padding: 25px;">กำลังโหลดข้อมูล...</td></tr>
-          </tbody>
-        </table>
+      <!-- ตารางรายการสต็อกที่ต้องติดตาม -->
+      <div class="panel-card">
+        <h3 class="panel-title">รายการสต็อกที่ต้องติดตาม</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 140px;">รหัส PPE</th>
+                <th>ชื่ออุปกรณ์</th>
+                <th style="width: 130px;">คงเหลือ</th>
+                <th style="width: 130px;">สต็อกขั้นต่ำ</th>
+                <th style="width: 140px; text-align: center;">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="urgentTableBody">
+              <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 25px;">กำลังโหลดข้อมูล...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      <!-- เมนูด่วน 3 การ์ดล่าง -->
+      <h3 class="quick-title">เมนูด่วน</h3>
+      <div class="quick-row">
+        <a href="restock.html" class="quick-btn b-blue">
+          <div class="quick-btn-h">📥 รับเข้า PPE</div>
+          <div class="quick-btn-sub">บันทึกเมื่อมีการรับอุปกรณ์เข้าคลัง</div>
+        </a>
+        <a href="pending.html" class="quick-btn b-green">
+          <div class="quick-btn-h">📋 เบิกจ่าย PPE</div>
+          <div class="quick-btn-sub">อนุมัติและบันทึกการแจกอุปกรณ์แก่พนักงาน</div>
+        </a>
+        <a href="history.html" class="quick-btn b-gold">
+          <div class="quick-btn-h">📦 ตรวจสอบสต็อก & ประวัติ</div>
+          <div class="quick-btn-sub">ดูรายการทั้งหมดและความเคลื่อนไหวล่าสุด</div>
+        </a>
+      </div>
+
+    </main>
   </div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
-    let allStockData = [];
-    let currentFilter = 'ALL';
 
-    window.onload = function() { loadStockData(); };
+    window.onload = function() {
+      loadDashboard();
+    };
 
-    function formatMoney(amount) {
-      return Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    function formatNumber(num) {
+      return Number(num || 0).toLocaleString('th-TH');
     }
 
-    function loadStockData() {
+    function formatMoney(num) {
+      return Number(num || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updateDateTime() {
+      const d = new Date();
+      const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('lastUpdateTime').innerText = `ข้อมูลอัปเดต ณ วันที่ ${dateStr} ${timeStr}`;
+    }
+
+    function loadDashboard() {
+      updateDateTime();
+
+      // 1. ดึงข้อมูลสต็อก
       fetch(`${API_URL}?action=getAdminDashboardStats`)
         .then(res => res.json())
         .then(res => {
           if (res.status === 'success') {
-            document.getElementById('valThisMonth').innerText = `฿${formatMoney(res.thisMonthCost)}`;
-            document.getElementById('valThisYear').innerText = `฿${formatMoney(res.thisYearCost)}`;
-            document.getElementById('valCurrentStock').innerText = `฿${formatMoney(res.grandStockValue)}`;
-            allStockData = res.stockList || [];
-            filterStockTable();
+            const list = res.stockList || [];
+            
+            let totalStock = 0;
+            let nearMinCount = 0;
+            let urgentCount = 0;
+            let outOfStockCount = 0;
+            const followItems = [];
+
+            list.forEach(item => {
+              const bal = Number(item.balance) || 0;
+              const min = Number(item.minStock) || 10;
+              totalStock += bal;
+
+              if (bal === 0) outOfStockCount++;
+              
+              if (bal <= min) {
+                urgentCount++;
+                followItems.push({ ...item, status: 'สั่งซื้อด่วน' });
+              } else if (bal <= min * 1.5) {
+                nearMinCount++;
+                followItems.push({ ...item, status: 'ใกล้จุดสั่งซื้อ' });
+              }
+            });
+
+            // อัปเดตตัวเลขบนการ์ด
+            document.getElementById('kpiTotalItems').innerText = list.length;
+            document.getElementById('kpiTotalStock').innerText = formatNumber(totalStock);
+            document.getElementById('kpiTotalValue').innerHTML = `${formatMoney(res.grandStockValue)} <span class="kpi-unit">บาท</span>`;
+            document.getElementById('kpiNearMin').innerText = nearMinCount;
+            document.getElementById('kpiUrgentReorder').innerText = urgentCount;
+            document.getElementById('kpiOutOfStock').innerText = outOfStockCount;
+
+            // เรนเดอร์ตารางติดตาม
+            renderUrgentTable(followItems);
+          }
+        });
+
+      // 2. ดึงจำนวนรายการรออนุมัติ
+      fetch(`${API_URL}?action=getPendingRequests`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            document.getElementById('kpiPendingCount').innerText = res.data ? res.data.length : 0;
           }
         });
     }
 
-    function setFilter(filterType, btn) {
-      currentFilter = filterType;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      filterStockTable();
-    }
-
-    function filterStockTable() {
-      const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
-      const tbody = document.getElementById('stockTableBody');
+    function renderUrgentTable(items) {
+      const tbody = document.getElementById('urgentTableBody');
       tbody.innerHTML = '';
 
-      if (!allStockData || allStockData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #888; padding: 20px;">ไม่มีข้อมูลสต็อก</td></tr>';
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #10b981; padding: 25px;">สต็อกทุกรายการอยู่ในระดับปลอดภัย 🎉</td></tr>';
         return;
       }
 
-      const filtered = allStockData.filter(item => {
-        const matchKeyword = item.id.toLowerCase().includes(keyword) || item.name.toLowerCase().includes(keyword);
-        const bal = Number(item.balance) || 0;
-        const min = Number(item.minStock) || 10;
-        
-        let matchFilter = true;
-        if (currentFilter === 'DANGER') matchFilter = bal <= min;
-        else if (currentFilter === 'WARNING') matchFilter = bal > min && bal <= (min * 1.5);
-        else if (currentFilter === 'SAFE') matchFilter = bal > (min * 1.5);
-
-        return matchKeyword && matchFilter;
-      });
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #888; padding: 20px;">ไม่พบรายการ</td></tr>';
-        return;
-      }
-
-      filtered.forEach(item => {
-        const bal = Number(item.balance) || 0;
-        const min = Number(item.minStock) || 10;
-        let badgeHtml = '';
-
-        if (bal <= min) {
-          badgeHtml = `<span class="status-badge status-danger">🔴 สั่งด่วน</span>`;
-        } else if (bal <= (min * 1.5)) {
-          badgeHtml = `<span class="status-badge status-warning">🟡 ใกล้หมด</span>`;
-        } else {
-          badgeHtml = `<span class="status-badge status-safe">🟢 ปกติ</span>`;
-        }
-
+      items.forEach(item => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td style="text-align: center; color: #64748b; font-weight: 600;">${item.id}</td>
+          <td style="color: #64748b; font-weight: 600;">${item.id}</td>
           <td><b>${item.name}</b></td>
-          <td style="text-align: center; color: #16a34a;">+${item.inQty}</td>
-          <td style="text-align: center; color: #dc2626;">-${item.outQty}</td>
-          <td style="text-align: center; font-size: 15px; font-weight: bold; color: ${bal <= min ? '#dc2626' : (bal <= min * 1.5 ? '#d97706' : '#16a34a')};">${bal}</td>
-          <td style="text-align: center; font-weight: bold; color: #475569; background: #f8fafc;">${min}</td>
-          <td style="text-align: right; font-weight: bold; color: #2563eb;">฿${formatMoney(item.totalValue)}</td>
-          <td style="text-align: center;">${badgeHtml}</td>
+          <td style="font-weight: bold; color: ${item.balance <= 0 ? '#ef4444' : '#1e293b'};">${item.balance} ชิ้น</td>
+          <td>${item.minStock || 10}</td>
+          <td style="text-align: center;"><span class="badge-urgent">${item.status}</span></td>
         `;
         tbody.appendChild(tr);
       });
