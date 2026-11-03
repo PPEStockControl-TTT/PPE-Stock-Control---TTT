@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - รายงานสรุปการเบิกจ่าย PPE ประจำเดือน</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f0f2f5; color: #333; }
+    
+    /* Top Header Bar */
+    header { background: #3b82f6; color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: bold; }
+    .header-user { display: flex; align-items: center; gap: 15px; font-size: 13px; }
+    .btn-portal { background: rgba(255,255,255,0.2); color: white; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+    .btn-portal:hover { background: rgba(255,255,255,0.3); }
+
+    /* Layout */
+    .app-wrapper { display: flex; min-height: calc(100vh - 56px); }
+    
+    /* Sidebar */
+    .sidebar { width: 220px; background: white; border-right: 1px solid #e2e8f0; padding: 20px 10px; flex-shrink: 0; }
+    .menu-title { font-size: 11px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; padding-left: 10px; }
+    .side-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: #475569; text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 8px; margin-bottom: 4px; transition: 0.2s; }
+    .side-link:hover { background: #f1f5f9; color: #1e293b; }
+    .side-link.active { background: #3b82f6; color: white; }
+
+    /* Main Area */
+    .main-content { flex-grow: 1; padding: 24px 30px; overflow-x: hidden; }
+    .card { background: white; border-radius: 10px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+
+    /* แถบเลือกเดือนและปุ่มสั่งการ */
+    .filter-panel {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 24px;
+    }
+    .filter-group { display: flex; align-items: center; gap: 10px; }
+    .filter-label { font-size: 13px; font-weight: bold; color: #334155; }
+    .input-month { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background: white; }
+
+    .action-btn-group { display: flex; gap: 10px; }
+    .btn-action {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+    .btn-excel { background: #10b981; color: white; }
+    .btn-excel:hover { background: #059669; }
+    .btn-print { background: #0284c7; color: white; }
+    .btn-print:hover { background: #0369a1; }
+
+    /* KPI Cards ประจำเดือน */
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .kpi-box { background: white; border-radius: 8px; padding: 18px; border-left: 4px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .kpi-box.c-blue { border-left-color: #3b82f6; }
+    .kpi-box.c-green { border-left-color: #10b981; }
+    .kpi-box.c-orange { border-left-color: #f97316; }
+    .kpi-title { font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 8px; }
+    .kpi-val { font-size: 24px; font-weight: 800; color: #0f172a; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th { background: #3b82f6; color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+    td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; }
+    tr:hover { background-color: #f8fafc; }
+
+    /* ปรับแต่งสำหรับการพิมพ์ (Print / PDF) */
+    @media print {
+      body { background: white; color: black; }
+      header, .sidebar, .filter-panel, .btn-portal { display: none !important; }
+      .app-wrapper { display: block; }
+      .main-content { padding: 0; }
+      .card { border: none; box-shadow: none; padding: 0; }
+      th { background: #e2e8f0 !important; color: black !important; }
+      .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
+    }
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- แถบด้านบน -->
+  <header>
+    <div class="brand">
+      <span>🦺</span> PPE Stock Control
+    </div>
+    <div class="header-user">
+      <span>ผู้ดูแลระบบ: <b>Admin Safety</b></span>
+      <a href="../index.html" class="btn-portal">ออกจากระบบ</a>
+    </div>
+  </header>
+
+  <div class="app-wrapper">
+    <!-- แถบเมนูด้านซ้าย (เพิ่มเมนู รายงานรายเดือน) -->
+    <aside class="sidebar">
+      <div class="menu-title">เมนูหลัก</div>
+      <a href="index.html" class="side-link">📊 Dashboard</a>
+      <a href="employees.html" class="side-link">👤 ทะเบียนพนักงาน</a>
+      <a href="restock.html" class="side-link">📥 รับเข้าสต็อก</a>
+      <a href="pending.html" class="side-link">📋 เบิกจ่าย PPE</a>
+      <a href="history.html" class="side-link">📜 ประวัติรายการ</a>
+      <a href="report.html" class="side-link active">📈 รายงานประจำเดือน</a>
+      <a href="../index.html" class="side-link" style="margin-top: 20px; color: #0284c7;">🦺 หน้าเบิกพนักงาน</a>
+    </aside>
+
+    <!-- เนื้อหาหลัก -->
+    <main class="main-content">
+      
+      <!-- หัวกระดาษเวลาสั่งพิมพ์ -->
+      <div class="print-header">
+        <h2 style="margin: 0;">รายงานสรุปการเบิกจ่ายอุปกรณ์ PPE ประจำเดือน</h2>
+        <div id="printSubTitle" style="font-size: 14px; margin-top: 6px;"></div>
+      </div>
+
+      <!-- แถบเลือกเดือนและปุ่ม Export -->
+      <div class="filter-panel">
+        <div class="filter-group">
+          <span class="filter-label">📅 เลือกเดือน/ปี ที่ต้องการดูรายงาน:</span>
+          <input type="month" id="selectedMonth" class="input-month" onchange="generateReport()">
+        </div>
+        <div class="action-btn-group">
+          <button class="btn-action btn-excel" onclick="exportToCSV()">📥 ส่งออก Excel (CSV)</button>
+          <button class="btn-action btn-print" onclick="window.print()">🖨️ พิมพ์รายงาน / บันทึก PDF</button>
+        </div>
+      </div>
+
+      <!-- สรุปภาพรวมประจำเดือน (Monthly KPIs) -->
+      <div class="kpi-row">
+        <div class="kpi-box c-blue">
+          <div class="kpi-title">จำนวนครั้งที่มีการเบิกจ่าย</div>
+          <div class="kpi-val" id="kpiMonthTrans">0 <span style="font-size: 13px; font-weight: normal; color: #64748b;">ครั้ง</span></div>
+        </div>
+        <div class="kpi-box c-orange">
+          <div class="kpi-title">ยอดเบิกจ่ายอุปกรณ์รวม</div>
+          <div class="kpi-val" id="kpiMonthQty">0 <span style="font-size: 13px; font-weight: normal; color: #64748b;">ชิ้น</span></div>
+        </div>
+        <div class="kpi-box c-green">
+          <div class="kpi-title">มูลค่าการเบิกจ่ายทั้งหมด</div>
+          <div class="kpi-val" id="kpiMonthValue">฿0.00</div>
+        </div>
+      </div>
+
+      <!-- ตารางที่ 1: สรุปยอดเบิกแยกตามอุปกรณ์ (Item Summary) -->
+      <div class="card">
+        <h3 style="color: #1e3a8a; margin-top: 0; font-size: 16px;">📦 สรุปยอดการเบิกจ่ายแยกตามอุปกรณ์ PPE</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">ลำดับ</th>
+                <th>ชื่ออุปกรณ์ PPE</th>
+                <th style="width: 120px; text-align: center;">จำนวนที่เบิก (ชิ้น)</th>
+                <th style="width: 150px; text-align: right;">มูลค่ารวม (บาท)</th>
+                <th style="width: 120px; text-align: center;">สัดส่วน (%)</th>
+              </tr>
+            </thead>
+            <tbody id="itemSummaryTbody">
+              <tr><td colspan="5" style="text-align: center; color: #888; padding: 25px;">กำลังคำนวณข้อมูลประจำเดือน...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ตารางที่ 2: ประวัติการเบิกจ่ายทั้งหมดในเดือนนี้ -->
+      <div class="card">
+        <h3 style="color: #1e3a8a; margin-top: 0; font-size: 16px;">📋 บันทึกรายการเบิกจ่ายรายบุคคลในเดือนนี้</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 130px;">วัน-เวลา</th>
+                <th style="width: 110px;">รหัสพนักงาน</th>
+                <th>ผู้ขอเบิก</th>
+                <th>แผนก/บริษัท</th>
+                <th>อุปกรณ์ PPE</th>
+                <th style="width: 80px; text-align: center;">จำนวน</th>
+                <th style="width: 110px; text-align: right;">มูลค่า (บาท)</th>
+                <th style="width: 120px;">ผู้อนุมัติจ่าย</th>
+              </tr>
+            </thead>
+            <tbody id="rawMonthTbody">
+              <tr><td colspan="8" style="text-align: center; color: #888; padding: 25px;">ไม่มีข้อมูล</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
+    let allTransactions = [];
+    let currentMonthData = [];
+
+    window.onload = function() {
+      // ตั้งค่าเริ่มต้นเป็นเดือนและปีปัจจุบัน
+      const now = new Date();
+      const yr = now.getFullYear();
+      const mo = String(now.getMonth() + 1).padStart(2, '0');
+      document.getElementById('selectedMonth').value = `${yr}-${mo}`;
+      
+      fetchAllTransactions();
+    };
+
+    function formatMoney(amount) {
+      return Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function fetchAllTransactions() {
+      fetch(`${API_URL}?action=getAllTransactions`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            allTransactions = res.data || [];
+            generateReport();
+          }
+        });
+    }
+
+    function generateReport() {
+      const selectedMonth = document.getElementById('selectedMonth').value; // คืนค่าเป็น "YYYY-MM"
+      if (!selectedMonth) return;
+
+      const [targetYear, targetMonth] = selectedMonth.split('-');
+      
+      // กรองเฉพาะรายการที่ประเภทเป็น OUT และตรงกับเดือน/ปีที่เลือก
+      currentMonthData = allTransactions.filter(row => {
+        if (row.type !== 'OUT') return false;
+        
+        // รูปแบบ row.date คือ "DD/MM/YYYY HH:mm"
+        const parts = row.date.split(' ')[0].split('/');
+        if (parts.length === 3) {
+          const rowMonth = parts[1];
+          const rowYear = parts[2];
+          return (rowMonth === targetMonth && rowYear === targetYear);
+        }
+        return false;
+      });
+
+      // อัปเดตหัวพิมพ์
+      document.getElementById('printSubTitle').innerText = `ข้อมูลประจำเดือน: ${targetMonth}/${targetYear} | ออกรายงาน ณ วันที่: ${new Date().toLocaleDateString('th-TH')}`;
+
+      // คำนวณ KPI
+      let totalQty = 0;
+      let totalValue = 0;
+      const itemMap = {};
+
+      currentMonthData.forEach(row => {
+        const q = Number(row.qty) || 0;
+        const v = Number(row.totalPrice) || 0;
+        totalQty += q;
+        totalValue += v;
+
+        if (!itemMap[row.item]) {
+          itemMap[row.item] = { qty: 0, val: 0 };
+        }
+        itemMap[row.item].qty += q;
+        itemMap[row.item].val += v;
+      });
+
+      document.getElementById('kpiMonthTrans').innerHTML = `${currentMonthData.length} <span style="font-size: 13px; font-weight: normal; color: #64748b;">ครั้ง</span>`;
+      document.getElementById('kpiMonthQty').innerHTML = `${totalQty.toLocaleString('th-TH')} <span style="font-size: 13px; font-weight: normal; color: #64748b;">ชิ้น</span>`;
+      document.getElementById('kpiMonthValue').innerText = `฿${formatMoney(totalValue)}`;
+
+      // เรนเดอร์ตารางที่ 1: สรุปตามอุปกรณ์
+      renderItemSummary(itemMap, totalQty);
+
+      // เรนเดอร์ตารางที่ 2: รายการละเอียด
+      renderRawTable(currentMonthData);
+    }
+
+    function renderItemSummary(itemMap, totalQty) {
+      const tbody = document.getElementById('itemSummaryTbody');
+      tbody.innerHTML = '';
+
+      const items = Object.keys(itemMap).map(k => ({
+        name: k,
+        qty: itemMap[k].qty,
+        val: itemMap[k].val
+      })).sort((a, b) => b.qty - a.qty);
+
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888; padding: 25px;">ไม่มีการเบิกจ่ายในเดือนที่เลือก</td></tr>';
+        return;
+      }
+
+      items.forEach((it, i) => {
+        const pct = totalQty > 0 ? ((it.qty / totalQty) * 100).toFixed(1) : 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align: center; color: #64748b;">${i + 1}</td>
+          <td><b>${it.name}</b></td>
+          <td style="text-align: center; font-weight: bold; color: #0284c7;">${it.qty}</td>
+          <td style="text-align: right; font-weight: bold; color: #1e3a8a;">฿${formatMoney(it.val)}</td>
+          <td style="text-align: center; color: #475569;">${pct}%</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderRawTable(list) {
+      const tbody = document.getElementById('rawMonthTbody');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #888; padding: 25px;">ไม่มีบันทึกรายการในเดือนนี้</td></tr>';
+        return;
+      }
+
+      list.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color: #64748b;">${row.date}</td>
+          <td style="font-weight: 600; color: #1e3a8a;">${row.empId}</td>
+          <td><b>${row.actor}</b></td>
+          <td>${row.info}</td>
+          <td><b>${row.item}</b></td>
+          <td style="text-align: center; font-weight: bold; color: #dc2626;">-${row.qty}</td>
+          <td style="text-align: right;">฿${formatMoney(row.totalPrice)}</td>
+          <td><span style="background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-size: 11px;">${row.approver || 'Admin'}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ฟังก์ชันส่งออกเป็นไฟล์ Excel / CSV
+    function exportToCSV() {
+      if (currentMonthData.length === 0) {
+        alert("ไม่มีข้อมูลสำหรับส่งออกในเดือนนี้");
+        return;
+      }
+
+      let csvContent = "\uFEFF"; // รองรับภาษาไทย (BOM)
+      csvContent += "วัน-เวลา,รหัสพนักงาน,ชื่อผู้เบิก,แผนก/บริษัท,อุปกรณ์ PPE,จำนวน,มูลค่า (บาท),ผู้อนุมัติจ่าย\n";
+
+      currentMonthData.forEach(r => {
+        csvContent += `"${r.date}","${r.empId}","${r.actor}","${r.info}","${r.item}","${r.qty}","${r.totalPrice}","${r.approver || 'Admin'}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const selectedMonth = document.getElementById('selectedMonth').value;
+      link.setAttribute("href", url);
+      link.setAttribute("download", `PPE_Monthly_Report_${selectedMonth}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
