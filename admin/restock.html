@@ -36,8 +36,20 @@
     input, select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; }
     input:focus, select:focus { border-color: #3b82f6; }
 
-    /* ส่วนเพิ่มรายการเข้าบิล */
+    /* ส่วนค้นหาและเพิ่มอุปกรณ์ */
     .add-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 18px; margin-bottom: 20px; }
+    
+    .item-selected-preview {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin: 10px 0;
+      font-size: 13px;
+      color: #1e40af;
+      display: none;
+    }
+
     .calc-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: white; border: 1px solid #e2e8f0; border-radius: 6px; margin: 12px 0; font-size: 13px; }
     .btn-add-item { width: 100%; background: #0284c7; color: white; border: none; padding: 11px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .btn-add-item:hover { background: #0369a1; }
@@ -123,13 +135,18 @@
 
         <!-- ฟอร์มเลือกอุปกรณ์และจำนวน -->
         <div class="add-box">
-          <h3 style="font-size: 15px; margin-bottom: 12px; color: #0284c7;">➕ เลือกอุปกรณ์และจำนวนเพื่อเพิ่มลงบิล</h3>
+          <h3 style="font-size: 15px; margin-bottom: 12px; color: #0284c7;">➕ ค้นหาอุปกรณ์และระบุจำนวนเพื่อเพิ่มลงบิล</h3>
           
           <div style="margin-bottom: 12px;">
-            <label>เลือกอุปกรณ์ PPE:</label>
-            <select id="itemSelect" onchange="updatePricePreview()">
-              <option value="">-- กรุณาเลือกอุปกรณ์ PPE --</option>
-            </select>
+            <label>พิมพ์ค้นหาหรือเลือกอุปกรณ์ PPE (แสดงชื่อเต็ม):</label>
+            <input list="ppeOptions" id="itemSearchInput" placeholder="พิมพ์ชื่ออุปกรณ์ หรือรหัส เช่น หมวก, แว่น, 1.1..." oninput="onItemSelected()" style="background-color: white;">
+            <datalist id="ppeOptions"></datalist>
+          </div>
+
+          <!-- กล่องสรุปชื่อเต็มของอุปกรณ์ที่เลือก -->
+          <div class="item-selected-preview" id="itemPreviewBox">
+            <div>อุปกรณ์ที่เลือก: <b id="previewName">-</b></div>
+            <div style="font-size: 12px; color: #2563eb; margin-top: 2px;">รหัส: <span id="previewId">-</span> | ราคาต่อหน่วย: <span id="previewPrice">-</span></div>
           </div>
 
           <div style="margin-bottom: 12px;">
@@ -191,6 +208,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
     let ppeList = [];
     let currentBatch = [];
+    let selectedItemObj = null;
 
     window.onload = function() {
       loadPPEForRestock();
@@ -206,43 +224,57 @@
         .then(res => {
           if (res.status === 'success') {
             ppeList = res.data || [];
-            const sel = document.getElementById('itemSelect');
-            sel.innerHTML = '<option value="">-- กรุณาเลือกอุปกรณ์ PPE --</option>';
-            ppeList.forEach((item, idx) => {
+            const dataList = document.getElementById('ppeOptions');
+            dataList.innerHTML = '';
+            
+            ppeList.forEach((item) => {
               const opt = document.createElement('option');
-              opt.value = idx;
-              opt.innerText = `[${item.id}] ${item.name} (฿${formatMoney(item.price)})`;
-              sel.appendChild(opt);
+              // แสดงรหัสและชื่อเต็มชัดเจน
+              opt.value = `[${item.id}] ${item.name}`;
+              dataList.appendChild(opt);
             });
           }
         });
     }
 
+    function onItemSelected() {
+      const val = document.getElementById('itemSearchInput').value.trim();
+      selectedItemObj = ppeList.find(item => `[${item.id}] ${item.name}` === val);
+
+      const previewBox = document.getElementById('itemPreviewBox');
+
+      if (selectedItemObj) {
+        document.getElementById('previewName').innerText = selectedItemObj.name;
+        document.getElementById('previewId').innerText = selectedItemObj.id;
+        document.getElementById('previewPrice').innerText = `฿${formatMoney(selectedItemObj.price)}`;
+        previewBox.style.display = 'block';
+      } else {
+        previewBox.style.display = 'none';
+      }
+      updatePricePreview();
+    }
+
     function updatePricePreview() {
-      const idx = document.getElementById('itemSelect').value;
       const qty = parseInt(document.getElementById('inQty').value) || 0;
 
-      if (idx === "") {
+      if (!selectedItemObj) {
         document.getElementById('lblUnitPrice').innerText = "฿0.00";
         document.getElementById('lblQtyCount').innerText = "0";
         document.getElementById('lblSubtotal').innerText = "฿0.00";
         return;
       }
 
-      const item = ppeList[idx];
-      const subtotal = item.price * qty;
-
-      document.getElementById('lblUnitPrice').innerText = `฿${formatMoney(item.price)}`;
+      const subtotal = selectedItemObj.price * qty;
+      document.getElementById('lblUnitPrice').innerText = `฿${formatMoney(selectedItemObj.price)}`;
       document.getElementById('lblQtyCount').innerText = qty;
       document.getElementById('lblSubtotal').innerText = `฿${formatMoney(subtotal)}`;
     }
 
     function addItemToBatch() {
-      const idx = document.getElementById('itemSelect').value;
       const qty = parseInt(document.getElementById('inQty').value) || 0;
 
-      if (idx === "") {
-        alert("กรุณาเลือกอุปกรณ์ PPE");
+      if (!selectedItemObj) {
+        alert("กรุณาเลือกอุปกรณ์ PPE จากรายการค้นหา");
         return;
       }
       if (qty <= 0) {
@@ -250,18 +282,19 @@
         return;
       }
 
-      const item = ppeList[idx];
       currentBatch.push({
-        id: item.id,
-        name: item.name,
-        price: item.price,
+        id: selectedItemObj.id,
+        name: selectedItemObj.name,
+        price: selectedItemObj.price,
         qty: qty,
-        subtotal: item.price * qty
+        subtotal: selectedItemObj.price * qty
       });
 
       // ล้างค่าที่ฟอร์มเลือก
-      document.getElementById('itemSelect').value = "";
+      document.getElementById('itemSearchInput').value = "";
       document.getElementById('inQty').value = "";
+      selectedItemObj = null;
+      document.getElementById('itemPreviewBox').style.display = 'none';
       updatePricePreview();
 
       renderBatchTable();
