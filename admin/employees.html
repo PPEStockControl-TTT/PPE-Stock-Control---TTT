@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ทะเบียนพนักงาน - PPE Stock Control</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f0f2f5; color: #333; }
+    
+    header { background: #3b82f6; color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: bold; }
+    .header-user { display: flex; align-items: center; gap: 15px; font-size: 13px; }
+    .btn-portal { background: rgba(255,255,255,0.2); color: white; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; }
+
+    .app-wrapper { display: flex; min-height: calc(100vh - 56px); }
+    
+    /* Sidebar */
+    .sidebar { width: 220px; background: white; border-right: 1px solid #e2e8f0; padding: 20px 10px; flex-shrink: 0; }
+    .menu-title { font-size: 11px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; padding-left: 10px; }
+    .side-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: #475569; text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 8px; margin-bottom: 4px; transition: 0.2s; }
+    .side-link:hover { background: #f1f5f9; color: #1e293b; }
+    .side-link.active { background: #3b82f6; color: white; }
+
+    .main-content { flex-grow: 1; padding: 24px 30px; overflow-x: hidden; }
+
+    .card { background: white; border-radius: 10px; border: 1px solid #e2e8f0; padding: 22px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    h2, h3 { margin-top: 0; color: #1e3a8a; }
+
+    /* ฟอร์มลงทะเบียน */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: flex-end; }
+    label { font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 5px; }
+    input, select { width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; }
+    input:focus, select:focus { border-color: #3b82f6; }
+    .btn-add { background: #10b981; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; height: 38px; }
+    .btn-add:hover { background: #059669; }
+
+    /* เครื่องมือค้นหา */
+    .table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+    .search-box { width: 280px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #3b82f6; color: white; padding: 10px 14px; text-align: left; }
+    td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; }
+    tr:hover { background: #f8fafc; }
+
+    /* ป้ายสถานะ */
+    .badge-active { background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 11px; }
+    .badge-resigned { background: #fee2e2; color: #b91c1c; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 11px; }
+
+    .btn-toggle-status { padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #cbd5e1; background: white; }
+    .btn-toggle-status:hover { background: #f1f5f9; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span>🦺</span> PPE Stock Control
+    </div>
+    <div class="header-user">
+      <span>ผู้ดูแลระบบ: <b>Admin Safety</b></span>
+      <a href="../index.html" class="btn-portal">ออกจากระบบ</a>
+    </div>
+  </header>
+
+  <div class="app-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="menu-title">เมนูหลัก</div>
+      <a href="index.html" class="side-link">📊 Dashboard</a>
+      <a href="employees.html" class="side-link active">👤 ทะเบียนพนักงาน</a>
+      <a href="restock.html" class="side-link">📥 รับเข้าสต็อก</a>
+      <a href="pending.html" class="side-link">📋 เบิกจ่าย PPE</a>
+      <a href="history.html" class="side-link">📜 ประวัติรายการ</a>
+      <a href="../index.html" class="side-link" style="margin-top: 20px; color: #0284c7;">🦺 หน้าเบิกพนักงาน</a>
+    </aside>
+
+    <main class="main-content">
+      <h2>👤 ทะเบียนพนักงาน (Employee Registry)</h2>
+
+      <!-- ฟอร์มลงทะเบียนพนักงานใหม่ (มีช่องระบุบริษัท) -->
+      <div class="card">
+        <h3 style="margin-bottom: 15px; font-size: 16px;">➕ ลงทะเบียนพนักงานใหม่</h3>
+        <div class="form-grid">
+          <div>
+            <label>รหัสประจำตัวพนักงาน *</label>
+            <input type="text" id="newEmpId" placeholder="เช่น 20-010 หรือ TTT-1000">
+          </div>
+          <div>
+            <label>ชื่อ - นามสกุล *</label>
+            <input type="text" id="newName" placeholder="ระบุชื่อและนามสกุล">
+          </div>
+          <div>
+            <label>แผนก / สังกัด *</label>
+            <input type="text" id="newDept" placeholder="เช่น Operation, Maintenance">
+          </div>
+          <div>
+            <label>บริษัท (Company) *</label>
+            <input type="text" id="newCompany" value="Thai Tank Terminal" placeholder="เช่น Thai Tank Terminal">
+          </div>
+          <div>
+            <label>สถานะเริ่มต้น</label>
+            <select id="newStatus">
+              <option value="Active">🟢 Active (ปกติ)</option>
+              <option value="Resigned">🔴 Resigned (ลาออก)</option>
+            </select>
+          </div>
+          <div>
+            <button type="button" class="btn-add" id="btnAddEmp" onclick="addNewEmployee()">💾 บันทึก</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- รายชื่อพนักงานทั้งหมด -->
+      <div class="card">
+        <div class="table-toolbar">
+          <h3 style="margin: 0; font-size: 16px;">📋 รายชื่อพนักงานในระบบ (<span id="empCount">0</span> คน)</h3>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="searchEmp" class="search-box" placeholder="🔍 ค้นหารหัส, ชื่อ, แผนก หรือบริษัท..." oninput="filterEmployees()">
+            <button onclick="loadEmployees()" style="padding: 6px 12px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer;">🔄 รีเฟรช</button>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 120px;">รหัสพนักงาน</th>
+                <th>ชื่อ - นามสกุล</th>
+                <th>แผนก (Department)</th>
+                <th>บริษัท (Company)</th>
+                <th style="width: 120px; text-align: center;">สถานะ</th>
+                <th style="width: 150px; text-align: center;">การจัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="empTableBody">
+              <tr><td colspan="6" style="text-align: center; color: #888; padding: 25px;">กำลังโหลดข้อมูลพนักงาน...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
+    let allEmployees = [];
+
+    window.onload = function() {
+      loadEmployees();
+    };
+
+    function loadEmployees() {
+      fetch(`${API_URL}?action=getAllEmployees`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            allEmployees = res.data || [];
+            document.getElementById('empCount').innerText = allEmployees.length;
+            filterEmployees();
+          }
+        });
+    }
+
+    function filterEmployees() {
+      const keyword = document.getElementById('searchEmp').value.toLowerCase().trim();
+      const tbody = document.getElementById('empTableBody');
+      tbody.innerHTML = '';
+
+      const filtered = allEmployees.filter(emp => 
+        emp.empId.toLowerCase().includes(keyword) ||
+        emp.name.toLowerCase().includes(keyword) ||
+        emp.department.toLowerCase().includes(keyword) ||
+        (emp.company && emp.company.toLowerCase().includes(keyword))
+      );
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888; padding: 20px;">ไม่พบข้อมูลพนักงาน</td></tr>';
+        return;
+      }
+
+      filtered.forEach(emp => {
+        const isActive = emp.status === 'Active' || emp.status === 'ปกติ';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight: 600; color: #1e3a8a;">${emp.empId}</td>
+          <td><b>${emp.name}</b></td>
+          <td>${emp.department}</td>
+          <td style="color: #475569;">${emp.company || 'Thai Tank Terminal'}</td>
+          <td style="text-align: center;">
+            <span class="${isActive ? 'badge-active' : 'badge-resigned'}">${isActive ? '🟢 Active' : '🔴 ลาออก'}</span>
+          </td>
+          <td style="text-align: center;">
+            <button class="btn-toggle-status" onclick="toggleStatus(${emp.rowIndex}, '${emp.name}', '${isActive ? 'Resigned' : 'Active'}')">
+              ${isActive ? '❌ ปรับเป็นลาออก' : '✅ ปรับเป็น Active'}
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addNewEmployee() {
+      const empId = document.getElementById('newEmpId').value.trim();
+      const name = document.getElementById('newName').value.trim();
+      const dept = document.getElementById('newDept').value.trim();
+      const comp = document.getElementById('newCompany').value.trim();
+      const status = document.getElementById('newStatus').value;
+      const btn = document.getElementById('btnAddEmp');
+
+      if (!empId || !name || !dept) {
+        alert("กรุณากรอกรหัสพนักงาน ชื่อ และแผนกให้ครบถ้วน");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "กำลังบันทึก...";
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          type: 'ADD_EMPLOYEE',
+          empId: empId,
+          name: name,
+          department: dept,
+          company: comp || 'Thai Tank Terminal',
+          status: status
+        })
+      })
+      .then(res => res.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerText = "💾 บันทึก";
+        if (res.status === 'success') {
+          alert("✅ ลงทะเบียนพนักงานสำเร็จแล้ว!");
+          document.getElementById('newEmpId').value = '';
+          document.getElementById('newName').value = '';
+          document.getElementById('newDept').value = '';
+          loadEmployees();
+        } else {
+          alert("เกิดข้อผิดพลาด: " + res.message);
+        }
+      })
+      .catch(() => {
+        btn.disabled = false;
+        btn.innerText = "💾 บันทึก";
+        alert("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
+      });
+    }
+
+    function toggleStatus(rowIndex, name, newStatus) {
+      const statusText = newStatus === 'Active' ? 'Active (ปกติ)' : 'Resigned (ลาออก)';
+      if (!confirm(`ต้องการเปลี่ยนสถานะของ "${name}" ให้เป็น "${statusText}" ใช่หรือไม่?`)) {
+        return;
+      }
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          type: 'UPDATE_EMPLOYEE_STATUS',
+          rowIndex: rowIndex,
+          status: newStatus
+        })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'success') {
+          loadEmployees();
+        } else {
+          alert("เกิดข้อผิดพลาด: " + res.message);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
