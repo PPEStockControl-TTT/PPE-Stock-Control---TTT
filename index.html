@@ -8,7 +8,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #115e59; /* สีเขียวเข้มแบบ Dark Teal ตามรูป */
+      background: #115e59;
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -16,11 +16,11 @@
       padding: 20px;
     }
 
-    /* กล่องการ์ดหน้าเข้าสู่ระบบ */
+    /* การ์ดเข้าสู่ระบบ */
     .login-card {
       background: #ffffff;
       width: 100%;
-      max-width: 380px;
+      max-width: 440px;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.25);
       padding: 35px 30px;
@@ -49,8 +49,26 @@
     .app-subtitle {
       font-size: 13px;
       color: #64748b;
-      margin-bottom: 24px;
+      margin-bottom: 18px;
     }
+
+    /* กล่องข้อความอธิบายการใช้งานเดิม */
+    .instruction-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #0284c7;
+      border-radius: 8px;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 12px;
+      color: #334155;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .instruction-box b {
+      color: #0369a1;
+    }
+
     .form-group {
       text-align: left;
       margin-bottom: 18px;
@@ -79,7 +97,7 @@
       background: #1e3a8a;
       color: white;
       border: none;
-      padding: 11px;
+      padding: 12px;
       font-size: 14px;
       font-weight: 600;
       border-radius: 6px;
@@ -101,7 +119,7 @@
       color: #0f172a;
     }
 
-    /* กล่องหน้าจอสำหรับเลือกเบิกของ (จะแสดงขึ้นมาหลังยืนยันรหัสผ่านพนักงานสำเร็จ) */
+    /* กล่องหน้าจอสำหรับเลือกเบิกของ */
     .store-container {
       display: none;
       width: 100%;
@@ -188,13 +206,21 @@
 </head>
 <body>
 
-  <!-- 1. กล่องการ์ดหน้ายืนยันตัวตนพนักงาน (สไตล์เดียวกับรูป) -->
+  <!-- การ์ดยืนยันตัวตนพนักงาน -->
   <div class="login-card" id="loginCard">
     <div class="icon-wrapper">
       <span>⛑️</span>
     </div>
     <h2 class="app-title">PPE Stock Control</h2>
     <p class="app-subtitle">ระบบเบิกจ่ายอุปกรณ์ความปลอดภัย (สำหรับพนักงาน)</p>
+
+    <!-- กล่องข้อความอธิบายการใช้งาน -->
+    <div class="instruction-box">
+      <b>📌 คำแนะนำการเบิกใช้งาน:</b>
+      <div>• กรุณาระบุรหัสพนักงานให้ถูกต้องเพื่อตรวจสอบสิทธิ์</div>
+      <div>• เลือกเฉพาะอุปกรณ์ที่จำเป็นต่อการปฏิบัติงานจริง</div>
+      <div>• หลังจากกดส่งคำขอ กรุณารับอุปกรณ์ที่ห้องคลังเพื่อให้อนุมัติจ่ายของ</div>
+    </div>
 
     <div class="form-group">
       <label class="form-label">รหัสประจำตัวพนักงาน</label>
@@ -208,7 +234,7 @@
     </div>
   </div>
 
-  <!-- 2. หน้าจอเบิกอุปกรณ์ (จะเปิดขึ้นมาอัตโนมัติเมื่อพนักงานยืนยันตัวตนผ่าน) -->
+  <!-- หน้าจอเบิกอุปกรณ์ -->
   <div class="store-container" id="storeContainer">
     <div class="store-header">
       <div>
