@@ -52,7 +52,7 @@
       margin-bottom: 18px;
     }
 
-    /* กล่องข้อความอธิบายการใช้งานเดิม */
+    /* กล่องข้อความคำแนะนำ */
     .instruction-box {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -67,6 +67,10 @@
     }
     .instruction-box b {
       color: #0369a1;
+    }
+    .instruction-box ul {
+      margin: 4px 0 0 16px;
+      padding: 0;
     }
 
     .form-group {
@@ -214,17 +218,18 @@
     <h2 class="app-title">PPE Stock Control</h2>
     <p class="app-subtitle">ระบบเบิกจ่ายอุปกรณ์ความปลอดภัย (สำหรับพนักงาน)</p>
 
-    <!-- กล่องข้อความอธิบายการใช้งาน -->
+    <!-- กล่องคำแนะนำรูปแบบรหัสพนักงาน -->
     <div class="instruction-box">
-      <b>📌 คำแนะนำการเบิกใช้งาน:</b>
-      <div>• กรุณาระบุรหัสพนักงานให้ถูกต้องเพื่อตรวจสอบสิทธิ์</div>
-      <div>• เลือกเฉพาะอุปกรณ์ที่จำเป็นต่อการปฏิบัติงานจริง</div>
-      <div>• หลังจากกดส่งคำขอ กรุณารับอุปกรณ์ที่ห้องคลังเพื่อให้อนุมัติจ่ายของ</div>
+      <b>📌 คำแนะนำการระบุรหัสพนักงาน:</b>
+      <ul>
+        <li>รหัสพนักงาน TTT เช่น <b>20-000</b></li>
+        <li>รหัสพนักงาน Contract out เช่น <b>TTT-1000</b></li>
+      </ul>
     </div>
 
     <div class="form-group">
       <label class="form-label">รหัสประจำตัวพนักงาน</label>
-      <input type="text" id="empIdInput" class="form-input" placeholder="เช่น 0001 หรือ EMP001" onkeypress="if(event.key === 'Enter') handleEmpLogin()">
+      <input type="text" id="empIdInput" class="form-input" placeholder="เช่น 20-000 หรือ TTT-1000" onkeypress="if(event.key === 'Enter') handleEmpLogin()">
     </div>
 
     <button type="button" class="btn-submit" id="btnEmpLogin" onclick="handleEmpLogin()">เข้าสู่ระบบเบิกอุปกรณ์</button>
