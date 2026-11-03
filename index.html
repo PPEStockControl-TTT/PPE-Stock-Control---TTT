@@ -5,304 +5,361 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PPE Store - ระบบเบิกอุปกรณ์ PPE</title>
   <style>
-    :root { --primary: #007bff; --accent: #28a745; --bg: #f5f7fa; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding-bottom: 90px; background: var(--bg); color: #333; }
-    header { background: white; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
-    h2, h3, h4 { margin: 0; }
-    .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #115e59; /* สีเขียวเข้มแบบ Dark Teal ตามรูป */
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
 
-    /* Login Card */
-    .auth-card { background: white; padding: 25px; border-radius: 12px; max-width: 450px; margin: 40px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; }
-    .auth-card input { width: 100%; padding: 12px; margin: 15px 0 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
-    .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    /* กล่องการ์ดหน้าเข้าสู่ระบบ */
+    .login-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 380px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      padding: 35px 30px;
+      text-align: center;
+    }
+    .icon-wrapper {
+      width: 72px;
+      height: 72px;
+      background: #f59e0b;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 16px auto;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+    }
+    .icon-wrapper span {
+      font-size: 34px;
+    }
+    .app-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    .app-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+    .form-group {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus {
+      border-color: #0284c7;
+    }
+    .btn-submit {
+      width: 100%;
+      background: #1e3a8a;
+      color: white;
+      border: none;
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(30, 58, 138, 0.2);
+      transition: background 0.2s;
+    }
+    .btn-submit:hover {
+      background: #172554;
+    }
+    .admin-link {
+      display: inline-block;
+      margin-top: 18px;
+      font-size: 12px;
+      color: #64748b;
+      text-decoration: none;
+    }
+    .admin-link:hover {
+      color: #0f172a;
+    }
 
-    /* Instructions box */
-    .info-box { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 15px; text-align: left; font-size: 13px; color: #4a5568; line-height: 1.6; }
-
-    /* Top bar info */
-    .user-profile { font-size: 14px; background: #e8f0fe; padding: 6px 12px; border-radius: 20px; border: 1px solid #cce0ff; display: inline-flex; gap: 8px; align-items: center; }
-
-    /* Filters */
-    .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; margin-bottom: 15px; }
-    .filter-btn { padding: 6px 14px; border: 1px solid #ddd; background: white; border-radius: 20px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: 500; }
-    .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-    /* Grid Catalog */
-    .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
-    .product-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #eee; }
-    .product-img { width: 100%; height: 160px; object-fit: contain; background: #fff; padding: 10px; box-sizing: border-box; }
-    .product-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
-    .category-badge { font-size: 11px; color: #666; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 5px; width: fit-content; }
-    .product-title { font-size: 14px; font-weight: 600; line-height: 1.4; margin-bottom: 8px; flex: 1; }
-    .product-unit { font-size: 12px; color: #888; }
-    .btn-add { background: var(--accent); color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-    .btn-add:hover { background: #218838; }
-
-    /* Floating Cart Footer */
-    .cart-footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 12px 20px; box-shadow: 0 -3px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-    .cart-btn { background: #2c3e50; color: white; padding: 10px 18px; border-radius: 8px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; gap: 8px; align-items: center; }
-
-    /* Modal Cart */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: center; }
-    .modal-content { background: white; border-radius: 12px; width: 90%; max-width: 500px; padding: 20px; max-height: 80vh; overflow-y: auto; }
-    .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
-    .qty-controls { display: flex; align-items: center; gap: 6px; }
-    .qty-controls button { width: 26px; height: 26px; border-radius: 4px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-weight: bold; }
-    
-    /* History Drawer */
-    .history-box { margin-top: 30px; background: white; border-radius: 10px; padding: 15px; border: 1px solid #eee; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { border-bottom: 1px solid #f0f0f0; padding: 8px; text-align: left; }
-    th { color: #888; }
+    /* กล่องหน้าจอสำหรับเลือกเบิกของ (จะแสดงขึ้นมาหลังยืนยันรหัสผ่านพนักงานสำเร็จ) */
+    .store-container {
+      display: none;
+      width: 100%;
+      max-width: 900px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      padding: 25px;
+    }
+    .store-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+    .emp-badge {
+      background: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .ppe-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 15px;
+      max-height: 55vh;
+      overflow-y: auto;
+      padding: 5px;
+    }
+    .ppe-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .ppe-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    .qty-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-qty {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .qty-input {
+      width: 50px;
+      text-align: center;
+      padding: 5px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+    }
+    .btn-confirm-all {
+      width: 100%;
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .btn-confirm-all:hover {
+      background: #059669;
+    }
   </style>
 </head>
 <body>
 
-  <!-- จอที่ 1: ตรวจสอบรหัสพนักงานก่อนเริ่มช้อป -->
-  <div class="container" id="loginScreen">
-    <div class="auth-card">
-      <h2>🦺 เบิกจ่ายอุปกรณ์ PPE</h2>
-      <p style="color:#666; font-size: 14px; margin-top: 6px;">กรุณาระบุรหัสพนักงานเพื่อเริ่มการเบิกอุปกรณ์</p>
-      
-      <!-- ช่องกรอกรหัสพนักงาน -->
-      <input type="text" id="empIdInput" placeholder="พิมพ์รหัสพนักงานของท่าน">
+  <!-- 1. กล่องการ์ดหน้ายืนยันตัวตนพนักงาน (สไตล์เดียวกับรูป) -->
+  <div class="login-card" id="loginCard">
+    <div class="icon-wrapper">
+      <span>⛑️</span>
+    </div>
+    <h2 class="app-title">PPE Stock Control</h2>
+    <p class="app-subtitle">ระบบเบิกจ่ายอุปกรณ์ความปลอดภัย (สำหรับพนักงาน)</p>
 
-      <!-- กล่องคำอธิบายเพิ่มเติม -->
-      <div class="info-box">
-        <div>🔹 <b>พนักงาน TTT:</b> กรอกรหัสพนักงาน</div>
-        <div>🔹 <b>Contract out:</b> <code>TTT-</code> ตามด้วยรหัสพนักงาน (เช่น TTT-1001)</div>
-      </div>
+    <div class="form-group">
+      <label class="form-label">รหัสประจำตัวพนักงาน</label>
+      <input type="text" id="empIdInput" class="form-input" placeholder="เช่น 0001 หรือ EMP001" onkeypress="if(event.key === 'Enter') handleEmpLogin()">
+    </div>
 
-      <button class="btn-login" onclick="loginEmployee()">เข้าสู่แคตตาล็อก</button>
-      <div id="loginMsg" style="color:red; margin-top: 10px; font-size: 13px;"></div>
+    <button type="button" class="btn-submit" id="btnEmpLogin" onclick="handleEmpLogin()">เข้าสู่ระบบเบิกอุปกรณ์</button>
+
+    <div>
+      <a href="admin/login.html" class="admin-link">🔒 เข้าสู่ระบบผู้ดูแล (Admin Portal)</a>
     </div>
   </div>
 
-  <!-- จอที่ 2: หน้าหลัก Catalog & Shopping -->
-  <div id="shopScreen" style="display: none;">
-    <header>
-      <h3>PPE Catalog</h3>
-      <div class="user-profile">
-        <span>👤 <b id="userBadge">สมชาย</b> (<span id="deptBadge">ซ่อมบำรุง</span>)</span>
-        <a href="javascript:logout()" style="color:red; text-decoration: none; margin-left: 5px;">ออกจากระบบ</a>
-      </div>
-    </header>
-
-    <div class="container">
-      <div class="filter-bar" id="categoryBar">
-        <button class="filter-btn active" onclick="filterCategory('All')">ทั้งหมด</button>
-      </div>
-
-      <div class="catalog-grid" id="catalogGrid"></div>
-
-      <div class="history-box">
-        <h4>📋 ประวัติการเบิกอุปกรณ์ของคุณ</h4>
-        <div style="overflow-x: auto; margin-top: 10px;">
-          <table>
-            <thead>
-              <tr>
-                <th>วัน-เวลา</th>
-                <th>อุปกรณ์</th>
-                <th>จำนวน</th>
-              </tr>
-            </thead>
-            <tbody id="historyBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div class="cart-footer">
+  <!-- 2. หน้าจอเบิกอุปกรณ์ (จะเปิดขึ้นมาอัตโนมัติเมื่อพนักงานยืนยันตัวตนผ่าน) -->
+  <div class="store-container" id="storeContainer">
+    <div class="store-header">
       <div>
-        <span style="font-size: 13px; color: #666;">รายการในตะกร้า:</span>
-        <b id="totalItemsCount" style="color: var(--primary); font-size: 16px; margin-left: 4px;">0 รายการ</b>
+        <h2 style="color: #0f172a; font-size: 18px;">📋 เลือกอุปกรณ์ PPE ที่ต้องการเบิก</h2>
+        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">เลือกจำนวนแล้วกดยืนยันคำขอเบิก</div>
       </div>
-      <button class="cart-btn" onclick="openCartModal()">
-        🛒 ตะกร้าของฉัน (<span id="cartCountBadge">0</span>)
-      </button>
-    </div>
-  </div>
-
-  <!-- Modal หน้าต่างดูตะกร้าสินค้า -->
-  <div class="modal" id="cartModal">
-    <div class="modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3>🛒 รายการเบิกในตะกร้า</h3>
-        <button onclick="closeCartModal()" style="border:none; background:none; font-size: 20px; cursor: pointer;">✕</button>
-      </div>
-
-      <div id="cartItemsList"></div>
-
-      <div style="margin-top: 20px;">
-        <button class="btn-login" id="btnCheckout" onclick="checkout()" style="background: var(--accent);">✅ ยืนยันการเบิกทั้งหมด</button>
+      <div class="emp-badge">
+        👤 <b id="lblEmpName">-</b> (<span id="lblEmpDept">-</span>)
+        <button onclick="logoutEmp()" style="margin-left: 8px; border: none; background: none; color: #ef4444; cursor: pointer; text-decoration: underline;">ออก</button>
       </div>
     </div>
+
+    <div class="ppe-grid" id="ppeGrid">
+      <div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 30px;">กำลังโหลดรายการอุปกรณ์...</div>
+    </div>
+
+    <button type="button" class="btn-confirm-all" id="btnSubmitRequest" onclick="submitWithdrawal()">
+      📤 ส่งคำขอเบิกอุปกรณ์
+    </button>
   </div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
-    let ppeItems = [];
     let currentEmployee = null;
-    let cart = [];
+    let ppeItems = [];
+    let selectedQty = {};
 
-    function loginEmployee() {
+    function handleEmpLogin() {
       const empId = document.getElementById('empIdInput').value.trim();
-      const msg = document.getElementById('loginMsg');
-      if (!empId) { msg.innerText = "กรุณาระบุรหัสพนักงานของท่าน"; return; }
+      const btn = document.getElementById('btnEmpLogin');
 
-      msg.style.color = "#007bff";
-      msg.innerText = "กำลังเข้าสู่ระบบ...";
+      if (!empId) {
+        alert("กรุณาระบุรหัสพนักงาน");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "กำลังตรวจสอบรหัส...";
 
       fetch(`${API_URL}?action=getEmployeeData&empId=${encodeURIComponent(empId)}`)
         .then(res => res.json())
         .then(res => {
-          if (res.status === 'success') {
-            currentEmployee = res.employee;
-            document.getElementById('userBadge').innerText = currentEmployee.name;
-            document.getElementById('deptBadge').innerText = currentEmployee.department;
-            
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('shopScreen').style.display = 'block';
+          btn.disabled = false;
+          btn.innerText = "เข้าสู่ระบบเบิกอุปกรณ์";
 
-            renderHistory(res.history);
-            loadCatalog();
+          if (res.status === 'success' && res.employee) {
+            currentEmployee = res.employee;
+            document.getElementById('lblEmpName').innerText = currentEmployee.name;
+            document.getElementById('lblEmpDept').innerText = currentEmployee.department;
+
+            document.getElementById('loginCard').style.display = 'none';
+            document.getElementById('storeContainer').style.display = 'block';
+            loadPPEList();
           } else {
-            msg.style.color = "red";
-            msg.innerText = res.message || "ไม่พบรหัสพนักงานนี้ในระบบ";
+            alert(res.message || "ไม่พบรหัสพนักงานนี้ในระบบ");
           }
         })
         .catch(() => {
-          msg.style.color = "red";
-          msg.innerText = "ไม่สามารถเชื่อมต่อระบบได้";
+          btn.disabled = false;
+          btn.innerText = "เข้าสู่ระบบเบิกอุปกรณ์";
+          alert("ไม่สามารถติดต่อระบบได้ กรุณาลองใหม่อีกครั้ง");
         });
     }
 
-    function logout() {
+    function logoutEmp() {
       currentEmployee = null;
-      cart = [];
-      updateCartUI();
-      document.getElementById('shopScreen').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'block';
+      selectedQty = {};
       document.getElementById('empIdInput').value = '';
+      document.getElementById('storeContainer').style.display = 'none';
+      document.getElementById('loginCard').style.display = 'block';
     }
 
-    function loadCatalog() {
+    function loadPPEList() {
       fetch(`${API_URL}?action=getPPE`)
         .then(res => res.json())
         .then(res => {
           if (res.status === 'success') {
-            ppeItems = res.data;
-            setupCategories();
-            renderCatalog(ppeItems);
+            ppeItems = res.data || [];
+            renderGrid();
           }
         });
     }
 
-    function setupCategories() {
-      const categories = ['All', ...new Set(ppeItems.map(item => item.category))];
-      const bar = document.getElementById('categoryBar');
-      bar.innerHTML = '';
-      categories.forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = `filter-btn ${cat === 'All' ? 'active' : ''}`;
-        btn.innerText = cat === 'All' ? 'ทั้งหมด' : cat;
-        btn.onclick = () => {
-          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          filterCategory(cat);
-        };
-        bar.appendChild(btn);
-      });
+    function changeQty(idx, delta) {
+      const cur = selectedQty[idx] || 0;
+      const next = Math.max(0, cur + delta);
+      selectedQty[idx] = next;
+      document.getElementById(`input_qty_${idx}`).value = next;
     }
 
-    function filterCategory(cat) {
-      if (cat === 'All') renderCatalog(ppeItems);
-      else renderCatalog(ppeItems.filter(item => item.category === cat));
+    function setManualQty(idx, val) {
+      selectedQty[idx] = Math.max(0, parseInt(val) || 0);
     }
 
-    function renderCatalog(items) {
-      const grid = document.getElementById('catalogGrid');
+    function renderGrid() {
+      const grid = document.getElementById('ppeGrid');
       grid.innerHTML = '';
-      items.forEach(item => {
-        const imgUrl = item.imageId ? `https://drive.google.com/thumbnail?id=${item.imageId}&sz=w300` : 'https://via.placeholder.com/200?text=No+Image';
+
+      if (ppeItems.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #64748b;">ไม่มีรายการอุปกรณ์ในระบบ</div>';
+        return;
+      }
+
+      ppeItems.forEach((item, idx) => {
         const card = document.createElement('div');
-        card.className = 'product-card';
+        card.className = 'ppe-card';
         card.innerHTML = `
-          <img src="${imgUrl}" class="product-img" alt="${item.name}">
-          <div class="product-info">
-            <span class="category-badge">${item.category}</span>
-            <div class="product-title">${item.name}</div>
-            <div class="product-unit">หน่วยนับ: ${item.unit || 'ชิ้น'}</div>
-            <button class="btn-add" onclick="addToCart('${item.id}')">+ เพิ่มลงตะกร้า</button>
+          <div>
+            <div style="font-size: 11px; color: #64748b;">รหัส: ${item.id}</div>
+            <div class="ppe-name">${item.name}</div>
+          </div>
+          <div class="qty-box">
+            <button type="button" class="btn-qty" onclick="changeQty(${idx}, -1)">-</button>
+            <input type="number" id="input_qty_${idx}" class="qty-input" value="0" min="0" onchange="setManualQty(${idx}, this.value)">
+            <button type="button" class="btn-qty" onclick="changeQty(${idx}, 1)">+</button>
+            <span style="font-size: 12px; color: #64748b;">${item.unit || 'ชิ้น'}</span>
           </div>
         `;
         grid.appendChild(card);
       });
     }
 
-    function addToCart(itemId) {
-      const item = ppeItems.find(p => String(p.id) === String(itemId));
-      const existing = cart.find(c => String(c.id) === String(itemId));
-      if (existing) existing.qty += 1;
-      else cart.push({ id: item.id, name: item.name, unit: item.unit || 'ชิ้น', qty: 1 });
-      
-      updateCartUI();
-    }
-
-    function updateCartUI() {
-      const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
-      document.getElementById('totalItemsCount').innerText = `${totalCount} รายการ`;
-      document.getElementById('cartCountBadge').innerText = totalCount;
-    }
-
-    function openCartModal() {
-      const list = document.getElementById('cartItemsList');
-      list.innerHTML = '';
-      if (cart.length === 0) {
-        list.innerHTML = '<p style="text-align:center; color:#888; margin: 30px 0;">ไม่มีรายการในตะกร้า</p>';
-      } else {
-        cart.forEach((item, index) => {
-          const row = document.createElement('div');
-          row.className = 'cart-item';
-          row.innerHTML = `
-            <div>
-              <div style="font-weight: 600; font-size: 14px;">${item.name}</div>
-              <small style="color:#888;">หน่วย: ${item.unit}</small>
-            </div>
-            <div class="qty-controls">
-              <button onclick="changeQty(${index}, -1)">-</button>
-              <span style="min-width: 20px; text-align: center;">${item.qty}</span>
-              <button onclick="changeQty(${index}, 1)">+</button>
-            </div>
-          `;
-          list.appendChild(row);
-        });
+    function submitWithdrawal() {
+      const itemsToSubmit = [];
+      for (const idx in selectedQty) {
+        if (selectedQty[idx] > 0) {
+          itemsToSubmit.push({
+            name: ppeItems[idx].name,
+            qty: selectedQty[idx]
+          });
+        }
       }
-      document.getElementById('cartModal').style.display = 'flex';
-    }
 
-    function changeQty(index, diff) {
-      cart[index].qty += diff;
-      if (cart[index].qty <= 0) cart.splice(index, 1);
-      updateCartUI();
-      openCartModal();
-    }
+      if (itemsToSubmit.length === 0) {
+        alert("กรุณาเลือกอุปกรณ์ที่ต้องการเบิกอย่างน้อย 1 รายการ");
+        return;
+      }
 
-    function closeCartModal() {
-      document.getElementById('cartModal').style.display = 'none';
-    }
+      if (!confirm(`ยืนยันการขอเบิกจำนวน ${itemsToSubmit.length} รายการ สำหรับ ${currentEmployee.name}?`)) {
+        return;
+      }
 
-    function checkout() {
-      if (cart.length === 0) { alert("ไม่มีรายการในตะกร้า"); return; }
-      const btn = document.getElementById('btnCheckout');
+      const btn = document.getElementById('btnSubmitRequest');
       btn.disabled = true;
-      btn.innerText = "กำลังบันทึกรายการ...";
+      btn.innerText = "กำลังส่งคำขอเบิก...";
 
       const payload = {
         empId: currentEmployee.empId,
         name: currentEmployee.name,
         department: currentEmployee.department,
-        items: cart
+        items: itemsToSubmit
       };
 
       fetch(API_URL, {
@@ -313,41 +370,19 @@
       .then(res => res.json())
       .then(res => {
         btn.disabled = false;
-        btn.innerText = "✅ ยืนยันการเบิกทั้งหมด";
+        btn.innerText = "📤 ส่งคำขอเบิกอุปกรณ์";
         if (res.status === 'success') {
-          alert("บันทึกการเบิกอุปกรณ์เรียบร้อยแล้ว!");
-          cart = [];
-          updateCartUI();
-          closeCartModal();
-          fetch(`${API_URL}?action=getEmployeeData&empId=${encodeURIComponent(currentEmployee.empId)}`)
-            .then(r => r.json()).then(r => renderHistory(r.history));
+          alert("✅ ส่งคำขอเบิกสำเร็จแล้ว! กรุณารอ Admin ตรวจสอบและกดจ่ายของ");
+          logoutEmp();
         } else {
           alert("เกิดข้อผิดพลาด: " + res.message);
         }
       })
       .catch(() => {
         btn.disabled = false;
-        btn.innerText = "✅ ยืนยันการเบิกทั้งหมด";
-        alert("ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+        btn.innerText = "📤 ส่งคำขอเบิกอุปกรณ์";
+        alert("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
       });
-    }
-
-    function renderHistory(history) {
-      const tbody = document.getElementById('historyBody');
-      tbody.innerHTML = '';
-      if (!history || history.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">ยังไม่มีประวัติการเบิก</td></tr>';
-      } else {
-        history.forEach(row => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${row.timestamp}</td>
-            <td>${row.item}</td>
-            <td style="color:#dc3545; font-weight:bold;">-${row.qty}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
     }
   </script>
 </body>
