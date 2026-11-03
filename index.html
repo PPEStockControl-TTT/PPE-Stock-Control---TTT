@@ -30,18 +30,23 @@
       padding: 35px 30px;
       text-align: center;
     }
-    .icon-wrapper {
-      width: 72px;
-      height: 72px;
-      background: #f59e0b;
-      border-radius: 50%;
+
+    /* โลโก้บริษัทแทนที่ไอคอนเดิม */
+    .logo-container {
+      width: 100%;
+      max-width: 220px;
+      height: 75px;
+      margin: 0 auto 16px auto;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0 auto 16px auto;
-      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
     }
-    .icon-wrapper span { font-size: 34px; }
+    .logo-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
     .app-title { font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
     .app-subtitle { font-size: 13px; color: #64748b; margin-bottom: 18px; }
 
@@ -306,7 +311,7 @@
     }
     .btn-send:hover { background: #059669; }
 
-    /* Modal สรุปรายการก่อนกดยืนยัน (Order Review Modal) */
+    /* Modal สรุปรายการก่อนกดยืนยัน */
     .review-modal-overlay {
       display: none;
       position: fixed;
@@ -451,9 +456,12 @@
   <!-- 1. ส่วนหน้า Login พนักงาน -->
   <div class="login-wrapper" id="loginWrapper">
     <div class="login-card">
-      <div class="icon-wrapper">
-        <span>⛑️</span>
+      
+      <!-- โลโก้บริษัทจาก Google Drive -->
+      <div class="logo-container">
+        <img src="https://lh3.googleusercontent.com/d/1MJakP1_3HnN3Bb6VxG0UCgUMmS-0h-vM" alt="Company Logo" onerror="this.onerror=null; this.src='https://drive.google.com/thumbnail?id=1MJakP1_3HnN3Bb6VxG0UCgUMmS-0h-vM&sz=w600';">
       </div>
+
       <h2 class="app-title">PPE Stock Control</h2>
       <p class="app-subtitle">ระบบเบิกจ่ายอุปกรณ์ความปลอดภัย (สำหรับพนักงาน)</p>
 
@@ -525,7 +533,7 @@
     </main>
   </div>
 
-  <!-- 3. หน้าต่าง Pop-up สรุปรายการก่อนกดยืนยัน (Order Review Modal) -->
+  <!-- 3. หน้าต่าง Pop-up สรุปรายการก่อนกดยืนยัน -->
   <div class="review-modal-overlay" id="reviewModal" onclick="if(event.target===this) closeReviewModal()">
     <div class="review-modal-card">
       <div class="review-header">
@@ -553,9 +561,7 @@
               <th style="width: 110px; text-align: center;">จำนวนที่ขอเบิก</th>
             </tr>
           </thead>
-          <tbody id="reviewTableBody">
-            <!-- ข้อมูลรายการที่เลือกจะแสดงที่นี่ -->
-          </tbody>
+          <tbody id="reviewTableBody"></tbody>
         </table>
       </div>
 
@@ -568,7 +574,7 @@
     </div>
   </div>
 
-  <!-- Custom Alert Modal สำหรับแจ้งเตือนผลลัพธ์ -->
+  <!-- Custom Alert Modal -->
   <div class="custom-alert-box" id="customAlertBox">
     <div class="alert-card">
       <div class="alert-icon" id="customAlertIcon">⚠️</div>
@@ -760,7 +766,6 @@
       });
     }
 
-    /* เปิด Pop-up แสดงสรุปรายการอุปกรณ์ก่อนกดยืนยัน */
     function openReviewModal() {
       pendingItemsToSubmit = [];
       for (const idx in selectedQty) {
@@ -779,13 +784,11 @@
         return;
       }
 
-      // ใส่ข้อมูลพนักงานลง Modal
       document.getElementById('modalEmpName').innerText = `${currentEmployee.name} (รหัส: ${currentEmployee.empId})`;
       const compText = currentEmployee.company ? ` / ${currentEmployee.company}` : '';
       document.getElementById('modalEmpDept').innerText = `${currentEmployee.department}${compText}`;
       document.getElementById('modalItemCount').innerText = pendingItemsToSubmit.length;
 
-      // เรนเดอร์ตารางรายการที่เลือก
       const tbody = document.getElementById('reviewTableBody');
       tbody.innerHTML = '';
       pendingItemsToSubmit.forEach((item, i) => {
@@ -805,7 +808,6 @@
       document.getElementById('reviewModal').style.display = 'none';
     }
 
-    /* ส่งคำขอจริงเมื่อกดยืนยันในหน้าต่าง Pop-up */
     function confirmAndSendRequest() {
       const btn = document.getElementById('btnConfirmSubmit');
       btn.disabled = true;
