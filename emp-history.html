@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ประวัติการเบิกของฉัน - PPE Store</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f1f5f9;
+      min-height: 100vh;
+      color: #333;
+    }
+    header {
+      background: white;
+      padding: 14px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+    .brand { font-size: 18px; font-weight: bold; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+    
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .btn-back {
+      background: #0284c7;
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-back:hover { background: #0369a1; }
+
+    .container {
+      max-width: 1000px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid #e2e8f0;
+    }
+
+    .emp-summary {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .emp-info-title { font-size: 15px; font-weight: bold; color: #0f172a; }
+    .emp-info-sub { font-size: 13px; color: #64748b; margin-top: 2px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid #e2e8f0; padding: 12px 14px; text-align: left; }
+    th { background: #f8fafc; color: #475569; font-weight: bold; }
+    tr:hover { background: #f8fafc; }
+    
+    .badge-done {
+      background: #dcfce7;
+      color: #15803d;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span>🦺</span> PPE Store
+    </div>
+    <div class="nav-actions">
+      <!-- ปุ่มกดกลับไปหน้าเบิกของ -->
+      <a href="index.html" class="btn-back">⬅️ กลับไปหน้าเบิกของ</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div class="emp-summary">
+        <div>
+          <div class="emp-info-title">👤 ประวัติการเบิกอุปกรณ์ของ: <span id="lblEmpName" style="color: #0284c7;">-</span></div>
+          <div class="emp-info-sub">รหัส: <b id="lblEmpId">-</b> | แผนก: <b id="lblEmpDept">-</b></div>
+        </div>
+        <button onclick="loadHistory()" style="padding: 6px 12px; border: 1px solid #cbd5e1; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">🔄 อัปเดต</button>
+      </div>
+
+      <h3 style="margin-bottom: 14px; color: #1e293b; font-size: 16px;">📜 รายการอุปกรณ์ที่เบิกจ่ายแล้ว</h3>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 170px;">วัน-เวลาที่ได้รับของ</th>
+              <th>รายการอุปกรณ์ PPE</th>
+              <th style="width: 100px; text-align: center;">จำนวน</th>
+              <th style="width: 110px; text-align: center;">สถานะ</th>
+            </tr>
+          </thead>
+          <tbody id="historyTbody">
+            <tr><td colspan="4" style="text-align: center; color: #64748b; padding: 30px;">กำลังโหลดประวัติการเบิก...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
+    let currentEmployee = null;
+
+    window.onload = function() {
+      const savedEmp = sessionStorage.getItem("currentEmp");
+      if (!savedEmp) {
+        alert("กรุณาเข้าสู่ระบบก่อนดูประวัติ");
+        window.location.href = "index.html";
+        return;
+      }
+      currentEmployee = JSON.parse(savedEmp);
+      document.getElementById('lblEmpName').innerText = currentEmployee.name;
+      document.getElementById('lblEmpId').innerText = currentEmployee.empId;
+      document.getElementById('lblEmpDept').innerText = currentEmployee.department;
+      loadHistory();
+    };
+
+    function loadHistory() {
+      fetch(`${API_URL}?action=getEmployeeData&empId=${encodeURIComponent(currentEmployee.empId)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            renderHistory(res.history || []);
+          }
+        });
+    }
+
+    function renderHistory(list) {
+      const tbody = document.getElementById('historyTbody');
+      tbody.innerHTML = '';
+
+      if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 30px;">ยังไม่มีประวัติการเบิกอุปกรณ์ที่จ่ายแล้ว</td></tr>';
+        return;
+      }
+
+      list.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color: #64748b;">${row.timestamp}</td>
+          <td><b>${row.item}</b></td>
+          <td style="text-align: center; font-weight: bold; color: #0284c7;">${row.qty}</td>
+          <td style="text-align: center;"><span class="badge-done">จ่ายแล้ว</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>
