@@ -8,36 +8,40 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #115e59; /* สีเขียวเข้ม Dark Teal ตามรูป */
+      background: #115e59;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px;
     }
+
     .login-card {
       background: #ffffff;
       width: 100%;
-      max-width: 380px;
+      max-width: 440px;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-      padding: 35px 30px;
+      padding: 40px 32px;
       text-align: center;
     }
-    .icon-wrapper {
-      width: 72px;
-      height: 72px;
-      background: #f59e0b;
-      border-radius: 50%;
+
+    /* โลโก้บริษัทจาก Google Drive */
+    .logo-container {
+      width: 100%;
+      max-width: 220px;
+      height: 75px;
+      margin: 0 auto 16px auto;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0 auto 16px auto;
-      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
     }
-    .icon-wrapper span {
-      font-size: 34px;
+    .logo-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
     }
+
     .app-title {
       font-size: 20px;
       font-weight: 700;
@@ -49,6 +53,7 @@
       color: #64748b;
       margin-bottom: 24px;
     }
+
     .form-group {
       text-align: left;
       margin-bottom: 20px;
@@ -60,118 +65,208 @@
       color: #475569;
       margin-bottom: 6px;
     }
-    .password-container {
+    .input-wrapper {
       position: relative;
       display: flex;
       align-items: center;
     }
     .form-input {
       width: 100%;
-      padding: 10px 65px 10px 12px;
+      padding: 11px 55px 11px 14px;
       font-size: 14px;
       border: 1px solid #cbd5e1;
       border-radius: 6px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: 0.2s;
     }
     .form-input:focus {
-      border-color: #0284c7;
+      border-color: #1e3a8a;
     }
-    .btn-toggle {
+    .toggle-pwd {
       position: absolute;
-      right: 6px;
-      background: none;
-      border: none;
-      color: #64748b;
+      right: 12px;
       font-size: 12px;
+      color: #64748b;
       cursor: pointer;
-      padding: 4px 8px;
+      user-select: none;
+      font-weight: 600;
     }
+    .toggle-pwd:hover {
+      color: #0f172a;
+    }
+
     .btn-submit {
       width: 100%;
-      background: #1e3a8a; /* สีกรมท่าเข้ม */
+      background: #1e3a8a;
       color: white;
       border: none;
-      padding: 11px;
+      padding: 12px;
       font-size: 14px;
       font-weight: 600;
       border-radius: 6px;
       cursor: pointer;
       box-shadow: 0 4px 6px rgba(30, 58, 138, 0.2);
-      transition: background 0.2s;
+      transition: 0.2s;
     }
     .btn-submit:hover {
       background: #172554;
     }
-    .error-msg {
-      color: #ef4444;
-      font-size: 12px;
-      margin-top: 10px;
-      display: none;
-    }
+
     .back-link {
       display: inline-block;
-      margin-top: 18px;
+      margin-top: 20px;
       font-size: 12px;
       color: #64748b;
       text-decoration: none;
+      transition: 0.2s;
     }
     .back-link:hover {
       color: #0f172a;
+    }
+
+    /* Custom Modal แจ้งเตือนตรงกลางจอ */
+    .custom-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(3px);
+    }
+    .custom-modal-box {
+      background: white;
+      width: 100%;
+      max-width: 380px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      text-align: center;
+      padding: 26px 20px;
+      animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.88); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-icon-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      margin: 0 auto 14px auto;
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    .custom-modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+    .custom-modal-text {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .modal-btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: #1e3a8a;
+      color: white;
+      transition: 0.15s;
+    }
+    .modal-btn:hover {
+      background: #172554;
     }
   </style>
 </head>
 <body>
 
   <div class="login-card">
-    <div class="icon-wrapper">
-      <span>⛑️</span>
+    
+    <!-- โลโก้บริษัทจาก Google Drive -->
+    <div class="logo-container">
+      <img src="https://lh3.googleusercontent.com/d/1MJakP1_3HnN3Bb6VxG0UCgUMmS-0h-vM" alt="Company Logo" onerror="this.onerror=null; this.src='https://drive.google.com/thumbnail?id=1MJakP1_3HnN3Bb6VxG0UCgUMmS-0h-vM&sz=w600';">
     </div>
+
     <h2 class="app-title">PPE Stock Control</h2>
     <p class="app-subtitle">ระบบควบคุมสต็อกอุปกรณ์ PPE (Admin)</p>
 
     <div class="form-group">
       <label class="form-label">รหัสผ่านผู้ดูแลระบบ</label>
-      <div class="password-container">
-        <input type="password" id="adminPin" class="form-input" placeholder="กรอกรหัสผ่าน Admin" onkeypress="if(event.key === 'Enter') checkLogin()">
-        <button type="button" class="btn-toggle" onclick="togglePass()">แสดง</button>
+      <div class="input-wrapper">
+        <input type="password" id="adminPwd" class="form-input" placeholder="กรอกรหัสผ่าน Admin" onkeypress="if(event.key === 'Enter') checkLogin()">
+        <span class="toggle-pwd" id="toggleBtn" onclick="togglePassword()">แสดง</span>
       </div>
-      <div id="errMsg" class="error-msg">❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่</div>
     </div>
 
     <button type="button" class="btn-submit" onclick="checkLogin()">เข้าสู่ระบบ</button>
+
     <div>
       <a href="../index.html" class="back-link">← กลับไปยังหน้าเบิกพนักงาน</a>
     </div>
   </div>
 
-  <script>
-    // ตั้งค่ารหัสผ่าน Admin ที่ต้องการที่นี่ (ค่าเริ่มต้น: 1234 หรือเปลี่ยนตามต้องการ)
-    const ADMIN_PASS = "1234";
+  <!-- หน้าต่าง Pop-up แจ้งเตือนตรงกลางจอ -->
+  <div class="custom-modal-overlay" id="alertModal">
+    <div class="custom-modal-box">
+      <div class="modal-icon-circle">🔒</div>
+      <div class="custom-modal-title" id="alertTitle">รหัสผ่านไม่ถูกต้อง</div>
+      <div class="custom-modal-text" id="alertText">กรุณาตรวจสอบรหัสผ่านผู้ดูแลระบบอีกครั้ง</div>
+      <button type="button" class="modal-btn" onclick="closeAlert()">ตกลง</button>
+    </div>
+  </div>
 
-    function togglePass() {
-      const input = document.getElementById('adminPin');
-      const btn = event.target;
-      if (input.type === 'password') {
-        input.type = 'text';
+  <script>
+    // รหัสผ่านเข้าสู่ระบบ Admin (ปรับเปลี่ยนตามที่ต้องการได้ที่นี่)
+    const ADMIN_PASS = "admin1234";
+
+    function togglePassword() {
+      const pwd = document.getElementById('adminPwd');
+      const btn = document.getElementById('toggleBtn');
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
         btn.innerText = 'ซ่อน';
       } else {
-        input.type = 'password';
+        pwd.type = 'password';
         btn.innerText = 'แสดง';
       }
     }
 
-    function checkLogin() {
-      const pin = document.getElementById('adminPin').value.trim();
-      const err = document.getElementById('errMsg');
+    function showAlert(title, msg) {
+      document.getElementById('alertTitle').innerText = title;
+      document.getElementById('alertText').innerText = msg;
+      document.getElementById('alertModal').style.display = 'flex';
+    }
 
-      if (pin === ADMIN_PASS) {
-        sessionStorage.setItem("isAdminLoggedIn", "true");
+    function closeAlert() {
+      document.getElementById('alertModal').style.display = 'none';
+      document.getElementById('adminPwd').focus();
+    }
+
+    function checkLogin() {
+      const val = document.getElementById('adminPwd').value.trim();
+      if (!val) {
+        showAlert("แจ้งเตือน", "กรุณาระบุรหัสผ่านผู้ดูแลระบบ");
+        return;
+      }
+
+      if (val === ADMIN_PASS) {
+        sessionStorage.setItem("adminLoggedIn", "true");
         window.location.href = "index.html";
       } else {
-        err.style.display = "block";
-        document.getElementById('adminPin').value = "";
-        document.getElementById('adminPin').focus();
+        showAlert("เข้าสู่ระบบไม่สำเร็จ", "รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
       }
     }
   </script>
