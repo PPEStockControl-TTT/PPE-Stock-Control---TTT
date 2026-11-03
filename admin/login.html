@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - PPE Stock Control</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #115e59; /* สีเขียวเข้ม Dark Teal ตามรูป */
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .login-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 380px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      padding: 35px 30px;
+      text-align: center;
+    }
+    .icon-wrapper {
+      width: 72px;
+      height: 72px;
+      background: #f59e0b;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 16px auto;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+    }
+    .icon-wrapper span {
+      font-size: 34px;
+    }
+    .app-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    .app-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+    .form-group {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+    .password-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 65px 10px 12px;
+      font-size: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus {
+      border-color: #0284c7;
+    }
+    .btn-toggle {
+      position: absolute;
+      right: 6px;
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    .btn-submit {
+      width: 100%;
+      background: #1e3a8a; /* สีกรมท่าเข้ม */
+      color: white;
+      border: none;
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(30, 58, 138, 0.2);
+      transition: background 0.2s;
+    }
+    .btn-submit:hover {
+      background: #172554;
+    }
+    .error-msg {
+      color: #ef4444;
+      font-size: 12px;
+      margin-top: 10px;
+      display: none;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 18px;
+      font-size: 12px;
+      color: #64748b;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      color: #0f172a;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="icon-wrapper">
+      <span>⛑️</span>
+    </div>
+    <h2 class="app-title">PPE Stock Control</h2>
+    <p class="app-subtitle">ระบบควบคุมสต็อกอุปกรณ์ PPE (Admin)</p>
+
+    <div class="form-group">
+      <label class="form-label">รหัสผ่านผู้ดูแลระบบ</label>
+      <div class="password-container">
+        <input type="password" id="adminPin" class="form-input" placeholder="กรอกรหัสผ่าน Admin" onkeypress="if(event.key === 'Enter') checkLogin()">
+        <button type="button" class="btn-toggle" onclick="togglePass()">แสดง</button>
+      </div>
+      <div id="errMsg" class="error-msg">❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่</div>
+    </div>
+
+    <button type="button" class="btn-submit" onclick="checkLogin()">เข้าสู่ระบบ</button>
+    <div>
+      <a href="../index.html" class="back-link">← กลับไปยังหน้าเบิกพนักงาน</a>
+    </div>
+  </div>
+
+  <script>
+    // ตั้งค่ารหัสผ่าน Admin ที่ต้องการที่นี่ (ค่าเริ่มต้น: 1234 หรือเปลี่ยนตามต้องการ)
+    const ADMIN_PASS = "1234";
+
+    function togglePass() {
+      const input = document.getElementById('adminPin');
+      const btn = event.target;
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerText = 'ซ่อน';
+      } else {
+        input.type = 'password';
+        btn.innerText = 'แสดง';
+      }
+    }
+
+    function checkLogin() {
+      const pin = document.getElementById('adminPin').value.trim();
+      const err = document.getElementById('errMsg');
+
+      if (pin === ADMIN_PASS) {
+        sessionStorage.setItem("isAdminLoggedIn", "true");
+        window.location.href = "index.html";
+      } else {
+        err.style.display = "block";
+        document.getElementById('adminPin').value = "";
+        document.getElementById('adminPin').focus();
+      }
+    }
+  </script>
+</body>
+</html>
