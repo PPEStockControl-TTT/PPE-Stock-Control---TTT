@@ -162,7 +162,7 @@
       background: white;
     }
 
-    /* แถบปุ่มหมวดหมู่ (Category Filter Bar) */
+    /* แถบปุ่มหมวดหมู่ */
     .category-filter-bar {
       display: flex;
       gap: 8px;
@@ -305,6 +305,145 @@
       transition: 0.2s;
     }
     .btn-send:hover { background: #059669; }
+
+    /* Modal สรุปรายการก่อนกดยืนยัน (Order Review Modal) */
+    .review-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(3px);
+    }
+    .review-modal-card {
+      background: white;
+      width: 100%;
+      max-width: 580px;
+      border-radius: 16px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 85vh;
+      animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .review-header {
+      padding: 18px 24px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .review-title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-close-review {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: #64748b;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .review-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .emp-summary-strip {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #1e40af;
+      line-height: 1.5;
+    }
+    .review-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .review-table th {
+      background: #f1f5f9;
+      color: #475569;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .review-table td {
+      padding: 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .review-footer {
+      padding: 16px 24px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    .btn-modal-cancel {
+      padding: 10px 20px;
+      background: #e2e8f0;
+      color: #475569;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-modal-cancel:hover { background: #cbd5e1; }
+    .btn-modal-confirm {
+      padding: 10px 24px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+    }
+    .btn-modal-confirm:hover { background: #059669; }
+
+    /* Custom Alert สำหรับหน้าเบิก */
+    .custom-alert-box {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(2px);
+    }
+    .alert-card {
+      background: white;
+      max-width: 400px;
+      width: 100%;
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      animation: modalPop 0.2s ease-out;
+    }
+    .alert-icon { font-size: 34px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -363,7 +502,7 @@
         <input type="text" id="searchInput" class="search-box" placeholder="🔍 ค้นหารหัส หรือชื่ออุปกรณ์..." oninput="filterGrid()">
       </div>
 
-      <!-- แถบหมวดหมู่ (Categories Filter) -->
+      <!-- แถบหมวดหมู่ -->
       <div class="category-filter-bar" id="categoryFilterBar">
         <button class="cat-pill active" onclick="selectCategory('ALL', this)">🌟 ทั้งหมด (All Items)</button>
       </div>
@@ -373,17 +512,70 @@
         <div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">กำลังโหลดรายการอุปกรณ์...</div>
       </div>
 
-      <!-- แถบลอยสำหรับยืนยันคำขอด้านล่าง -->
+      <!-- แถบลอยสำหรับยืนยันคำขอ -->
       <div class="submit-bar">
         <div>
           <div style="font-size: 14px; font-weight: bold; color: #1e293b;">ยอดที่เลือกเบิก: <span id="summaryCount" style="color: #0284c7;">0</span> รายการ</div>
           <div style="font-size: 12px; color: #64748b;">*หลังจากส่งคำขอ กรุณารับอุปกรณ์ที่ห้องคลังเพื่อให้อนุมัติตัดสต็อก</div>
         </div>
-        <button type="button" class="btn-send" id="btnSubmitRequest" onclick="submitWithdrawal()">
+        <button type="button" class="btn-send" onclick="openReviewModal()">
           📤 ส่งคำขอเบิกอุปกรณ์
         </button>
       </div>
     </main>
+  </div>
+
+  <!-- 3. หน้าต่าง Pop-up สรุปรายการก่อนกดยืนยัน (Order Review Modal) -->
+  <div class="review-modal-overlay" id="reviewModal" onclick="if(event.target===this) closeReviewModal()">
+    <div class="review-modal-card">
+      <div class="review-header">
+        <div class="review-title">
+          <span>📦</span> สรุปรายการเบิกอุปกรณ์รอบนี้
+        </div>
+        <button type="button" class="btn-close-review" onclick="closeReviewModal()">×</button>
+      </div>
+      
+      <div class="review-body">
+        <div class="emp-summary-strip">
+          ผู้ขอเบิก: <b id="modalEmpName">-</b><br>
+          สังกัด: <span id="modalEmpDept">-</span>
+        </div>
+
+        <div style="font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">
+          รายการอุปกรณ์ที่คุณเลือกไว้ (<span id="modalItemCount">0</span> รายการ):
+        </div>
+
+        <table class="review-table">
+          <thead>
+            <tr>
+              <th style="width: 50px; text-align: center;">ลำดับ</th>
+              <th>ชื่ออุปกรณ์ PPE</th>
+              <th style="width: 110px; text-align: center;">จำนวนที่ขอเบิก</th>
+            </tr>
+          </thead>
+          <tbody id="reviewTableBody">
+            <!-- ข้อมูลรายการที่เลือกจะแสดงที่นี่ -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="review-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeReviewModal()">แก้ไขเพิ่มเติม</button>
+        <button type="button" class="btn-modal-confirm" id="btnConfirmSubmit" onclick="confirmAndSendRequest()">
+          ✅ ยืนยันการขอเบิก
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Modal สำหรับแจ้งเตือนผลลัพธ์ -->
+  <div class="custom-alert-box" id="customAlertBox">
+    <div class="alert-card">
+      <div class="alert-icon" id="customAlertIcon">⚠️</div>
+      <h3 style="margin-bottom: 8px; color: #0f172a;" id="customAlertTitle">แจ้งเตือน</h3>
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;" id="customAlertMsg">-</p>
+      <button type="button" class="btn-submit" onclick="document.getElementById('customAlertBox').style.display='none'">ตกลง</button>
+    </div>
   </div>
 
   <script>
@@ -392,6 +584,7 @@
     let ppeItems = [];
     let selectedQty = {};
     let selectedCategory = 'ALL';
+    let pendingItemsToSubmit = [];
 
     window.onload = function() {
       const savedEmp = sessionStorage.getItem("currentEmp");
@@ -401,12 +594,19 @@
       }
     };
 
+    function showAlert(title, msg, icon = '⚠️') {
+      document.getElementById('customAlertTitle').innerText = title;
+      document.getElementById('customAlertMsg').innerText = msg;
+      document.getElementById('customAlertIcon').innerText = icon;
+      document.getElementById('customAlertBox').style.display = 'flex';
+    }
+
     function handleEmpLogin() {
       const empId = document.getElementById('empIdInput').value.trim();
       const btn = document.getElementById('btnEmpLogin');
 
       if (!empId) {
-        alert("กรุณาระบุรหัสพนักงาน");
+        showAlert("แจ้งเตือน", "กรุณาระบุรหัสประจำตัวพนักงาน", "⚠️");
         return;
       }
 
@@ -424,19 +624,18 @@
             sessionStorage.setItem("currentEmp", JSON.stringify(currentEmployee));
             showStoreView();
           } else {
-            alert(res.message || "ไม่พบรหัสพนักงานนี้ในระบบ");
+            showAlert("เข้าสู่ระบบไม่สำเร็จ", res.message || "ไม่พบรหัสพนักงานนี้ในระบบ", "❌");
           }
         })
         .catch(() => {
           btn.disabled = false;
           btn.innerText = "เข้าสู่ระบบเบิกอุปกรณ์";
-          alert("ไม่สามารถติดต่อระบบได้ กรุณาลองใหม่อีกครั้ง");
+          showAlert("เกิดข้อผิดพลาด", "ไม่สามารถติดต่อระบบได้ กรุณาลองใหม่อีกครั้ง", "❌");
         });
     }
 
     function showStoreView() {
       document.getElementById('lblEmpName').innerText = currentEmployee.name;
-      // แสดง แผนก / บริษัท (Company)
       const compText = currentEmployee.company ? ` / ${currentEmployee.company}` : '';
       document.getElementById('lblEmpDept').innerText = `${currentEmployee.department}${compText}`;
 
@@ -561,27 +760,54 @@
       });
     }
 
-    function submitWithdrawal() {
-      const itemsToSubmit = [];
+    /* เปิด Pop-up แสดงสรุปรายการอุปกรณ์ก่อนกดยืนยัน */
+    function openReviewModal() {
+      pendingItemsToSubmit = [];
       for (const idx in selectedQty) {
         if (selectedQty[idx] > 0) {
-          itemsToSubmit.push({
+          pendingItemsToSubmit.push({
+            id: ppeItems[idx].id,
             name: ppeItems[idx].name,
-            qty: selectedQty[idx]
+            qty: selectedQty[idx],
+            unit: ppeItems[idx].unit || 'ชิ้น'
           });
         }
       }
 
-      if (itemsToSubmit.length === 0) {
-        alert("กรุณาเลือกอุปกรณ์ที่ต้องการเบิกอย่างน้อย 1 รายการ");
+      if (pendingItemsToSubmit.length === 0) {
+        showAlert("แจ้งเตือน", "กรุณาเลือกอุปกรณ์ที่ต้องการเบิกอย่างน้อย 1 รายการ", "⚠️");
         return;
       }
 
-      if (!confirm(`ยืนยันการขอเบิกจำนวน ${itemsToSubmit.length} รายการ สำหรับ ${currentEmployee.name}?`)) {
-        return;
-      }
+      // ใส่ข้อมูลพนักงานลง Modal
+      document.getElementById('modalEmpName').innerText = `${currentEmployee.name} (รหัส: ${currentEmployee.empId})`;
+      const compText = currentEmployee.company ? ` / ${currentEmployee.company}` : '';
+      document.getElementById('modalEmpDept').innerText = `${currentEmployee.department}${compText}`;
+      document.getElementById('modalItemCount').innerText = pendingItemsToSubmit.length;
 
-      const btn = document.getElementById('btnSubmitRequest');
+      // เรนเดอร์ตารางรายการที่เลือก
+      const tbody = document.getElementById('reviewTableBody');
+      tbody.innerHTML = '';
+      pendingItemsToSubmit.forEach((item, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align: center; color: #64748b;">${i + 1}</td>
+          <td><b>${item.name}</b> <span style="font-size: 11px; color: #64748b;">(${item.id})</span></td>
+          <td style="text-align: center; font-weight: bold; color: #0284c7; font-size: 14px;">${item.qty} ${item.unit}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('reviewModal').style.display = 'flex';
+    }
+
+    function closeReviewModal() {
+      document.getElementById('reviewModal').style.display = 'none';
+    }
+
+    /* ส่งคำขอจริงเมื่อกดยืนยันในหน้าต่าง Pop-up */
+    function confirmAndSendRequest() {
+      const btn = document.getElementById('btnConfirmSubmit');
       btn.disabled = true;
       btn.innerText = "กำลังส่งคำขอเบิก...";
 
@@ -590,7 +816,7 @@
         name: currentEmployee.name,
         department: currentEmployee.department,
         company: currentEmployee.company || 'Thai Tank Terminal',
-        items: itemsToSubmit
+        items: pendingItemsToSubmit.map(it => ({ name: it.name, qty: it.qty }))
       };
 
       fetch(API_URL, {
@@ -601,20 +827,22 @@
       .then(res => res.json())
       .then(res => {
         btn.disabled = false;
-        btn.innerText = "📤 ส่งคำขอเบิกอุปกรณ์";
+        btn.innerText = "✅ ยืนยันการขอเบิก";
+        closeReviewModal();
+
         if (res.status === 'success') {
-          alert("✅ ส่งคำขอเบิกสำเร็จแล้ว! กรุณารอ Admin ตรวจสอบและกดจ่ายของ");
+          showAlert("ส่งคำขอสำเร็จ", "✅ ส่งคำขอเบิกเรียบร้อยแล้ว! กรุณารอรับอุปกรณ์ที่ห้องคลังเพื่อให้อนุมัติตัดสต็อก", "✅");
           selectedQty = {};
           filterGrid();
           updateSummary();
         } else {
-          alert("เกิดข้อผิดพลาด: " + res.message);
+          showAlert("เกิดข้อผิดพลาด", res.message || "ไม่สามารถส่งคำขอได้", "❌");
         }
       })
       .catch(() => {
         btn.disabled = false;
-        btn.innerText = "📤 ส่งคำขอเบิกอุปกรณ์";
-        alert("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
+        btn.innerText = "✅ ยืนยันการขอเบิก";
+        showAlert("ข้อผิดพลาด", "ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง", "❌");
       });
     }
   </script>
