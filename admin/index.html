@@ -47,7 +47,6 @@
     .kpi-card.c-yellow { border-left-color: #f59e0b; }
     .kpi-card.c-red { border-left-color: #ef4444; }
     
-    /* สไตล์สำหรับการ์ดที่กดได้ */
     .kpi-clickable { cursor: pointer; user-select: none; }
     .kpi-clickable:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.1); }
 
@@ -139,10 +138,11 @@
   </header>
 
   <div class="app-wrapper">
-    <!-- แถบเมนูด้านซ้าย -->
+    <!-- แถบเมนูด้านซ้าย (เพิ่มทะเบียนพนักงานแล้ว) -->
     <aside class="sidebar">
       <div class="menu-title">เมนูหลัก</div>
       <a href="index.html" class="side-link active">📊 Dashboard</a>
+      <a href="employees.html" class="side-link">👤 ทะเบียนพนักงาน</a>
       <a href="restock.html" class="side-link">📥 รับเข้าสต็อก</a>
       <a href="pending.html" class="side-link">📋 เบิกจ่าย PPE</a>
       <a href="history.html" class="side-link">📜 ประวัติรายการ</a>
@@ -167,7 +167,7 @@
         <button class="btn-refresh" onclick="loadDashboard()">🔄 รีเฟรชข้อมูล</button>
       </div>
 
-      <!-- สรุป 7 การ์ดตัวเลข (KPI Cards) -->
+      <!-- สรุป 7 การ์ดตัวเลข (KPI Cards) ครบทุกช่อง -->
       <div class="kpi-row">
         <div class="kpi-card c-blue">
           <div class="kpi-title">รายการ PPE ทั้งหมด</div>
@@ -186,7 +186,7 @@
           <div class="kpi-val" id="kpiNearMin">0</div>
         </div>
 
-        <!-- 1. ต้องสั่งซื้อด่วน (กดแล้ว Pop up) -->
+        <!-- การ์ด 5: ต้องสั่งซื้อด่วน (กดแล้วมี Pop up) -->
         <div class="kpi-card c-red kpi-clickable" onclick="openUrgentModal()" title="คลิกเพื่อดูรายการที่ต้องสั่งซื้อด่วนทั้งหมด">
           <div class="kpi-title">
             <span>ต้องสั่งซื้อด่วน</span>
@@ -195,7 +195,7 @@
           <div class="kpi-val" id="kpiUrgentReorder" style="color: #ef4444;">0</div>
         </div>
 
-        <!-- 2. รอดำเนินการจ่าย (กดแล้วเด้งไปหน้า pending.html) -->
+        <!-- การ์ด 6: รอดำเนินการจ่าย (กดแล้วเด้งไปหน้า pending.html) -->
         <div class="kpi-card c-yellow kpi-clickable" onclick="window.location.href='pending.html'" title="คลิกเพื่อไปหน้าอนุมัติและเบิกจ่าย PPE">
           <div class="kpi-title">
             <span>รอดำเนินการจ่าย</span>
@@ -204,7 +204,7 @@
           <div class="kpi-val" id="kpiPendingCount">0</div>
         </div>
 
-        <!-- 3. สินค้าหมดสต็อก (กดแล้ว Pop up) -->
+        <!-- การ์ด 7: สินค้าหมดสต็อก (กดแล้วมี Pop up) -->
         <div class="kpi-card c-red kpi-clickable" onclick="openOutStockModal()" title="คลิกเพื่อดูรายการสินค้าที่หมดสต็อกทั้งหมด">
           <div class="kpi-title">
             <span>สินค้าหมดสต็อก</span>
@@ -214,7 +214,7 @@
         </div>
       </div>
 
-      <!-- เมนูด่วน 3 การ์ด -->
+      <!-- เมนูด่วน 3 การ์ด (อยู่ด้านบน) -->
       <h3 class="quick-title">เมนูด่วน</h3>
       <div class="quick-row">
         <a href="restock.html" class="quick-btn b-blue">
@@ -274,9 +274,7 @@
                 <th style="width: 130px; text-align: center;">สถานะ</th>
               </tr>
             </thead>
-            <tbody id="modalTableBody">
-              <!-- ข้อมูลจะถูกใส่ที่นี่ผ่าน JS -->
-            </tbody>
+            <tbody id="modalTableBody"></tbody>
           </table>
         </div>
       </div>
@@ -312,7 +310,7 @@
     function loadDashboard() {
       updateDateTime();
 
-      // 1. ดึงข้อมูลสต็อก
+      // ดึงข้อมูลสต็อก
       fetch(`${API_URL}?action=getAdminDashboardStats`)
         .then(res => res.json())
         .then(res => {
@@ -343,7 +341,6 @@
               }
             });
 
-            // อัปเดตตัวเลขบนการ์ด
             document.getElementById('kpiTotalItems').innerText = rawStockList.length;
             document.getElementById('kpiTotalStock').innerText = formatNumber(totalStock);
             document.getElementById('kpiTotalValue').innerHTML = `${formatMoney(res.grandStockValue)} <span class="kpi-unit">บาท</span>`;
@@ -351,12 +348,11 @@
             document.getElementById('kpiUrgentReorder').innerText = urgentList.length;
             document.getElementById('kpiOutOfStock').innerText = outStockList.length;
 
-            // เรนเดอร์ตารางติดตาม
             renderUrgentTable(followItems);
           }
         });
 
-      // 2. ดึงจำนวนรายการรออนุมัติ
+      // ดึงจำนวนรายการรออนุมัติ
       fetch(`${API_URL}?action=getPendingRequests`)
         .then(res => res.json())
         .then(res => {
@@ -388,21 +384,18 @@
       });
     }
 
-    /* ฟังก์ชันเปิด Pop-up "ต้องสั่งซื้อด่วน" */
     function openUrgentModal() {
       document.getElementById('modalHeaderTitle').innerHTML = `🚨 รายการต้องสั่งซื้อด่วน (&le; สต็อกขั้นต่ำ) [${urgentList.length} รายการ]`;
       renderModalTable(urgentList, 'สั่งซื้อด่วน', 'badge-urgent');
       document.getElementById('detailModal').style.display = 'flex';
     }
 
-    /* ฟังก์ชันเปิด Pop-up "สินค้าหมดสต็อก" */
     function openOutStockModal() {
       document.getElementById('modalHeaderTitle').innerHTML = `⚠️ รายการสินค้าหมดสต็อก (คงเหลือ 0) [${outStockList.length} รายการ]`;
       renderModalTable(outStockList, 'หมดสต็อก', 'badge-outstock');
       document.getElementById('detailModal').style.display = 'flex';
     }
 
-    /* เรนเดอร์ข้อมูลลงใน Pop-up */
     function renderModalTable(items, statusText, badgeClass) {
       const tbody = document.getElementById('modalTableBody');
       tbody.innerHTML = '';
