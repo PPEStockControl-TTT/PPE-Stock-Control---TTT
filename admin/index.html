@@ -8,53 +8,48 @@
     * { box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f0f2f5; color: #333; }
     
-    /* Top Header Bar */
     header { background: #3b82f6; color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: bold; }
     .header-user { display: flex; align-items: center; gap: 15px; font-size: 13px; }
     .btn-portal { background: rgba(255,255,255,0.2); color: white; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; transition: 0.2s; }
     .btn-portal:hover { background: rgba(255,255,255,0.3); }
 
-    /* Layout */
     .app-wrapper { display: flex; min-height: calc(100vh - 56px); }
     
-    /* Sidebar */
     .sidebar { width: 220px; background: white; border-right: 1px solid #e2e8f0; padding: 20px 10px; flex-shrink: 0; }
     .menu-title { font-size: 11px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; padding-left: 10px; }
     .side-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: #475569; text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 8px; margin-bottom: 4px; transition: 0.2s; }
     .side-link:hover { background: #f1f5f9; color: #1e293b; }
     .side-link.active { background: #3b82f6; color: white; }
 
-    /* Main Area */
     .main-content { flex-grow: 1; padding: 24px 30px; overflow-x: hidden; }
     
-    /* Alert Banner */
     .announce-box { background: #fef9c3; border: 1px solid #fef08a; padding: 12px 18px; border-radius: 8px; font-size: 13px; color: #854d0e; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
 
-    /* Dashboard Header */
     .dash-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 18px; }
     .dash-title { margin: 0; font-size: 24px; color: #1e3a8a; font-weight: bold; }
     .dash-subtitle { font-size: 12px; color: #64748b; margin-top: 4px; }
     .btn-refresh { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; }
     .btn-refresh:hover { background: #2563eb; }
 
-    /* KPI Summary Cards */
-    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; margin-bottom: 20px; }
-    .kpi-card { background: white; border-radius: 8px; padding: 14px 16px; border-left: 4px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: 0.2s; }
+    /* KPI Summary Cards Grid */
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .kpi-card { background: white; border-radius: 8px; padding: 14px 14px; border-left: 4px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: 0.2s; }
     .kpi-card.c-blue { border-left-color: #3b82f6; }
     .kpi-card.c-green { border-left-color: #10b981; }
     .kpi-card.c-sky { border-left-color: #0284c7; }
+    .kpi-card.c-teal { border-left-color: #0d9488; }
+    .kpi-card.c-emerald { border-left-color: #059669; }
     .kpi-card.c-yellow { border-left-color: #f59e0b; }
     .kpi-card.c-red { border-left-color: #ef4444; }
     
     .kpi-clickable { cursor: pointer; user-select: none; }
     .kpi-clickable:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.1); }
 
-    .kpi-title { font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-    .kpi-val { font-size: 22px; font-weight: 800; color: #0f172a; }
-    .kpi-unit { font-size: 12px; font-weight: normal; color: #475569; }
+    .kpi-title { font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+    .kpi-val { font-size: 19px; font-weight: 800; color: #0f172a; }
+    .kpi-unit { font-size: 11px; font-weight: normal; color: #475569; }
 
-    /* Quick Action Menu */
     .quick-title { font-size: 15px; font-weight: bold; color: #1e3a8a; margin: 0 0 10px 0; }
     .quick-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .quick-btn { display: block; text-decoration: none; color: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); transition: 0.2s; }
@@ -65,7 +60,6 @@
     .quick-btn-h { font-size: 16px; font-weight: bold; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
     .quick-btn-sub { font-size: 12px; opacity: 0.88; }
 
-    /* Table Section */
     .panel-card { background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 24px; overflow: hidden; }
     .panel-title { padding: 14px 20px; font-size: 15px; font-weight: bold; color: #1e40af; border-bottom: 1px solid #f1f5f9; background: white; margin: 0; }
     
@@ -115,20 +109,13 @@
       border-bottom: 1px solid #e2e8f0;
     }
     .modal-title { font-size: 16px; font-weight: bold; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px; }
-    .btn-close-modal {
-      background: none; border: none; font-size: 22px; line-height: 1; color: #64748b; cursor: pointer; padding: 0 4px;
-    }
+    .btn-close-modal { background: none; border: none; font-size: 22px; line-height: 1; color: #64748b; cursor: pointer; padding: 0 4px; }
     .btn-close-modal:hover { color: #0f172a; }
-    .modal-body {
-      padding: 16px 20px;
-      overflow-y: auto;
-      flex: 1;
-    }
+    .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
   </style>
 </head>
 <body>
 
-  <!-- แถบด้านบน -->
   <header>
     <div class="brand">
       <span>🦺</span> PPE Stock Control
@@ -140,7 +127,6 @@
   </header>
 
   <div class="app-wrapper">
-    <!-- แถบเมนูด้านซ้าย (เพิ่มเมนู รายงานประจำเดือน แล้ว) -->
     <aside class="sidebar">
       <div class="menu-title">เมนูหลัก</div>
       <a href="index.html" class="side-link active">📊 Dashboard</a>
@@ -152,16 +138,12 @@
       <a href="../index.html" class="side-link" style="margin-top: 20px; color: #0284c7;">🦺 หน้าเบิกพนักงาน</a>
     </aside>
 
-    <!-- เนื้อหาหลัก Dashboard -->
     <main class="main-content">
-      
-      <!-- แถบแจ้งเตือนด้านบน -->
       <div class="announce-box">
         <span>🔔</span>
         <span><b>ระบบควบคุมสต็อก PPE:</b> ตรวจสอบยอดคงเหลือและดำเนินการอนุมัติการเบิกจ่ายตามจุดสั่งซื้อขั้นต่ำ</span>
       </div>
 
-      <!-- หัวข้อ Dashboard และเวลาอัปเดต -->
       <div class="dash-header">
         <div>
           <h1 class="dash-title">Dashboard ควบคุมสต็อก PPE</h1>
@@ -170,7 +152,7 @@
         <button class="btn-refresh" onclick="loadDashboard()">🔄 รีเฟรชข้อมูล</button>
       </div>
 
-      <!-- สรุป 7 การ์ดตัวเลข (KPI Cards) -->
+      <!-- สรุปการ์ดตัวเลข (รวมยอดรับเข้าทั้งปี และยอดรับเข้าประจำเดือน) -->
       <div class="kpi-row">
         <div class="kpi-card c-blue">
           <div class="kpi-title">รายการ PPE ทั้งหมด</div>
@@ -185,8 +167,19 @@
           <div class="kpi-val" id="kpiTotalValue">0.00 <span class="kpi-unit">บาท</span></div>
         </div>
 
-        <!-- 1. ใกล้จุดสั่งซื้อ (กดแล้ว Pop-up) -->
-        <div class="kpi-card c-yellow kpi-clickable" onclick="openNearMinModal()" title="คลิกเพื่อดูรายการที่ใกล้จุดสั่งซื้อทั้งหมด">
+        <!-- การ์ดยอดรับเข้าประจำเดือน -->
+        <div class="kpi-card c-teal">
+          <div class="kpi-title">รับเข้าเดือนนี้</div>
+          <div class="kpi-val" id="kpiMonthlyInValue" style="color: #0d9488;">0.00 <span class="kpi-unit">บาท</span></div>
+        </div>
+
+        <!-- การ์ดยอดรับเข้าทั้งปี -->
+        <div class="kpi-card c-emerald">
+          <div class="kpi-title">รับเข้าทั้งปีนี้</div>
+          <div class="kpi-val" id="kpiYearlyInValue" style="color: #059669;">0.00 <span class="kpi-unit">บาท</span></div>
+        </div>
+
+        <div class="kpi-card c-yellow kpi-clickable" onclick="openNearMinModal()" title="คลิกดูรายการ">
           <div class="kpi-title">
             <span>ใกล้จุดสั่งซื้อ</span>
             <span style="font-size: 13px;">🔍</span>
@@ -194,8 +187,7 @@
           <div class="kpi-val" id="kpiNearMin">0</div>
         </div>
 
-        <!-- 2. ต้องสั่งซื้อด่วน (กดแล้ว Pop-up) -->
-        <div class="kpi-card c-red kpi-clickable" onclick="openUrgentModal()" title="คลิกเพื่อดูรายการที่ต้องสั่งซื้อด่วนทั้งหมด">
+        <div class="kpi-card c-red kpi-clickable" onclick="openUrgentModal()" title="คลิกดูรายการ">
           <div class="kpi-title">
             <span>ต้องสั่งซื้อด่วน</span>
             <span style="font-size: 13px;">🔍</span>
@@ -203,8 +195,7 @@
           <div class="kpi-val" id="kpiUrgentReorder" style="color: #ef4444;">0</div>
         </div>
 
-        <!-- 3. รอดำเนินการจ่าย (กดแล้วไปหน้า pending.html) -->
-        <div class="kpi-card c-yellow kpi-clickable" onclick="window.location.href='pending.html'" title="คลิกเพื่อไปหน้าอนุมัติและเบิกจ่าย PPE">
+        <div class="kpi-card c-yellow kpi-clickable" onclick="window.location.href='pending.html'" title="คลิกไปหน้าอนุมัติ">
           <div class="kpi-title">
             <span>รอดำเนินการจ่าย</span>
             <span style="font-size: 13px;">➔</span>
@@ -212,8 +203,7 @@
           <div class="kpi-val" id="kpiPendingCount">0</div>
         </div>
 
-        <!-- 4. สินค้าหมดสต็อก (กดแล้ว Pop-up) -->
-        <div class="kpi-card c-red kpi-clickable" onclick="openOutStockModal()" title="คลิกเพื่อดูรายการสินค้าที่หมดสต็อกทั้งหมด">
+        <div class="kpi-card c-red kpi-clickable" onclick="openOutStockModal()" title="คลิกดูรายการ">
           <div class="kpi-title">
             <span>สินค้าหมดสต็อก</span>
             <span style="font-size: 13px;">🔍</span>
@@ -222,7 +212,7 @@
         </div>
       </div>
 
-      <!-- เมนูด่วน 3 การ์ด -->
+      <!-- เมนูด่วน -->
       <h3 class="quick-title">เมนูด่วน</h3>
       <div class="quick-row">
         <a href="restock.html" class="quick-btn b-blue">
@@ -239,7 +229,6 @@
         </a>
       </div>
 
-      <!-- ตารางรายการสต็อกที่ต้องติดตาม -->
       <div class="panel-card">
         <h3 class="panel-title">รายการสต็อกที่ต้องติดตาม</h3>
         <div style="overflow-x: auto;">
@@ -259,11 +248,10 @@
           </table>
         </div>
       </div>
-
     </main>
   </div>
 
-  <!-- หน้าต่าง Pop-up แสดงรายละเอียดรายการ -->
+  <!-- Modal Pop-up -->
   <div class="modal-overlay" id="detailModal" onclick="if(event.target===this) closeModal()">
     <div class="modal-card">
       <div class="modal-header">
@@ -319,12 +307,12 @@
     function loadDashboard() {
       updateDateTime();
 
+      // 1. ดึงสถิติภาพรวมสต็อก
       fetch(`${API_URL}?action=getAdminDashboardStats`)
         .then(res => res.json())
         .then(res => {
           if (res.status === 'success') {
             rawStockList = res.stockList || [];
-            
             let totalStock = 0;
             urgentList = [];
             nearMinList = [];
@@ -336,9 +324,7 @@
               const min = Number(item.minStock) || 10;
               totalStock += bal;
 
-              if (bal === 0) {
-                outStockList.push(item);
-              }
+              if (bal === 0) outStockList.push(item);
               
               if (bal <= min) {
                 urgentList.push(item);
@@ -360,6 +346,7 @@
           }
         });
 
+      // 2. ดึงจำนวนรอจ่าย
       fetch(`${API_URL}?action=getPendingRequests`)
         .then(res => res.json())
         .then(res => {
@@ -367,17 +354,50 @@
             document.getElementById('kpiPendingCount').innerText = res.data ? res.data.length : 0;
           }
         });
+
+      // 3. ดึงประวัติธุรกรรมเพื่อคำนวณ ยอดรับเข้าทั้งปี และ ยอดรับเข้าประจำเดือน
+      fetch(`${API_URL}?action=getAllTransactions`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            const list = res.data || [];
+            const now = new Date();
+            const currentYearStr = String(now.getFullYear());
+            const currentMonthStr = String(now.getMonth() + 1).padStart(2, '0');
+
+            let yearInVal = 0;
+            let monthInVal = 0;
+
+            list.forEach(row => {
+              if (row.type === 'IN') {
+                const val = Number(row.totalPrice) || 0;
+                const dateParts = String(row.date).split(' ')[0].split('/');
+                if (dateParts.length === 3) {
+                  const rMonth = dateParts[1];
+                  const rYear = dateParts[2];
+                  if (rYear === currentYearStr) {
+                    yearInVal += val;
+                    if (rMonth === currentMonthStr) {
+                      monthInVal += val;
+                    }
+                  }
+                }
+              }
+            });
+
+            document.getElementById('kpiMonthlyInValue').innerHTML = `${formatMoney(monthInVal)} <span class="kpi-unit">บาท</span>`;
+            document.getElementById('kpiYearlyInValue').innerHTML = `${formatMoney(yearInVal)} <span class="kpi-unit">บาท</span>`;
+          }
+        });
     }
 
     function renderUrgentTable(items) {
       const tbody = document.getElementById('urgentTableBody');
       tbody.innerHTML = '';
-
       if (!items || items.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #10b981; padding: 25px;">สต็อกทุกรายการอยู่ในระดับปลอดภัย 🎉</td></tr>';
         return;
       }
-
       items.forEach(item => {
         const tr = document.createElement('tr');
         const isUrgent = item.status === 'สั่งซื้อด่วน';
@@ -393,19 +413,19 @@
     }
 
     function openNearMinModal() {
-      document.getElementById('modalHeaderTitle').innerHTML = `⚠️ รายการใกล้จุดสั่งซื้อ (&le; 1.5x สต็อกขั้นต่ำ) [${nearMinList.length} รายการ]`;
+      document.getElementById('modalHeaderTitle').innerHTML = `⚠️ รายการใกล้จุดสั่งซื้อ [${nearMinList.length} รายการ]`;
       renderModalTable(nearMinList, 'ใกล้จุดสั่งซื้อ', 'badge-nearmin', '#b45309');
       document.getElementById('detailModal').style.display = 'flex';
     }
 
     function openUrgentModal() {
-      document.getElementById('modalHeaderTitle').innerHTML = `🚨 รายการต้องสั่งซื้อด่วน (&le; สต็อกขั้นต่ำ) [${urgentList.length} รายการ]`;
+      document.getElementById('modalHeaderTitle').innerHTML = `🚨 รายการต้องสั่งซื้อด่วน [${urgentList.length} รายการ]`;
       renderModalTable(urgentList, 'สั่งซื้อด่วน', 'badge-urgent', '#ef4444');
       document.getElementById('detailModal').style.display = 'flex';
     }
 
     function openOutStockModal() {
-      document.getElementById('modalHeaderTitle').innerHTML = `⚠️ รายการสินค้าหมดสต็อก (คงเหลือ 0) [${outStockList.length} รายการ]`;
+      document.getElementById('modalHeaderTitle').innerHTML = `⚠️ รายการสินค้าหมดสต็อก [${outStockList.length} รายการ]`;
       renderModalTable(outStockList, 'หมดสต็อก', 'badge-outstock', '#ef4444');
       document.getElementById('detailModal').style.display = 'flex';
     }
@@ -413,12 +433,10 @@
     function renderModalTable(items, statusText, badgeClass, qtyColor) {
       const tbody = document.getElementById('modalTableBody');
       tbody.innerHTML = '';
-
       if (!items || items.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #10b981; padding: 30px;">ไม่มีรายการ 🎉</td></tr>';
         return;
       }
-
       items.forEach(item => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
