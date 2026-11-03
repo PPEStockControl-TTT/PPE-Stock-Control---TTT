@@ -201,7 +201,7 @@
       loadPending();
     };
 
-    /* ระบบแจ้งเตือน Custom Alert / Confirm ตรงกลางจอ */
+    /* ระบบแจ้งเตือน Custom Alert / Confirm ตรงกลางจอ (แก้ไขบั๊ก callback) */
     let confirmCallback = null;
 
     function showCustomAlert(title, text, type = 'warning') {
@@ -250,10 +250,12 @@
       modal.style.display = 'flex';
     }
 
+    // แก้ไขจุดนี้: เก็บฟังก์ชัน callback ไว้ก่อนปิด modal ป้องกันการถูกล้างค่าเป็น null
     function executeConfirm() {
+      const cb = confirmCallback;
       closeCustomAlert();
-      if (typeof confirmCallback === 'function') {
-        confirmCallback();
+      if (typeof cb === 'function') {
+        cb();
       }
     }
 
@@ -306,6 +308,8 @@
 
     function approveRow(rowIndex, actor, item, qty) {
       showCustomConfirm("ยืนยันการจ่ายอุปกรณ์", `ยืนยันการจ่าย "${item}" จำนวน ${qty} ชิ้น ให้แก่ "${actor}" และดำเนินการตัดสต็อก?`, function() {
+        showCustomAlert("กำลังดำเนินการ", "⏳ กำลังบันทึกการตัดสต็อก...", "warning");
+
         fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -320,7 +324,7 @@
             showCustomAlert("ดำเนินการสำเร็จ", "✅ บันทึกจ่ายของและตัดยอดสต็อกเรียบร้อยแล้ว", "success");
             loadPending();
           } else {
-            showCustomAlert("เกิดข้อผิดพลาด", res.message, "error");
+            showCustomAlert("เกิดข้อผิดพลาด", res.message || "ไม่สามารถอนุมัติได้", "error");
           }
         })
         .catch(() => {
