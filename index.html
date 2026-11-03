@@ -10,13 +10,17 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #115e59;
       min-height: 100vh;
+      color: #333;
+    }
+
+    /* 1. ส่วนครอบหน้า Login (กึ่งกลางจอ) */
+    .login-wrapper {
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px;
     }
-
-    /* การ์ดเข้าสู่ระบบ */
     .login-card {
       background: #ffffff;
       width: 100%;
@@ -37,22 +41,10 @@
       margin: 0 auto 16px auto;
       box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
     }
-    .icon-wrapper span {
-      font-size: 34px;
-    }
-    .app-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 4px;
-    }
-    .app-subtitle {
-      font-size: 13px;
-      color: #64748b;
-      margin-bottom: 18px;
-    }
+    .icon-wrapper span { font-size: 34px; }
+    .app-title { font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+    .app-subtitle { font-size: 13px; color: #64748b; margin-bottom: 18px; }
 
-    /* กล่องข้อความคำแนะนำ */
     .instruction-box {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -65,25 +57,11 @@
       line-height: 1.6;
       margin-bottom: 20px;
     }
-    .instruction-box b {
-      color: #0369a1;
-    }
-    .instruction-box ul {
-      margin: 4px 0 0 16px;
-      padding: 0;
-    }
+    .instruction-box b { color: #0369a1; }
+    .instruction-box ul { margin: 4px 0 0 16px; padding: 0; }
 
-    .form-group {
-      text-align: left;
-      margin-bottom: 18px;
-    }
-    .form-label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: #475569;
-      margin-bottom: 6px;
-    }
+    .form-group { text-align: left; margin-bottom: 18px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; }
     .form-input {
       width: 100%;
       padding: 10px 12px;
@@ -91,11 +69,8 @@
       border: 1px solid #cbd5e1;
       border-radius: 6px;
       outline: none;
-      transition: border-color 0.2s;
     }
-    .form-input:focus {
-      border-color: #0284c7;
-    }
+    .form-input:focus { border-color: #0284c7; }
     .btn-submit {
       width: 100%;
       background: #1e3a8a;
@@ -107,158 +82,223 @@
       border-radius: 6px;
       cursor: pointer;
       box-shadow: 0 4px 6px rgba(30, 58, 138, 0.2);
-      transition: background 0.2s;
     }
-    .btn-submit:hover {
-      background: #172554;
-    }
-    .admin-link {
-      display: inline-block;
-      margin-top: 18px;
-      font-size: 12px;
-      color: #64748b;
-      text-decoration: none;
-    }
-    .admin-link:hover {
-      color: #0f172a;
-    }
+    .btn-submit:hover { background: #172554; }
+    .admin-link { display: inline-block; margin-top: 18px; font-size: 12px; color: #64748b; text-decoration: none; }
+    .admin-link:hover { color: #0f172a; }
 
-    /* กล่องหน้าจอสำหรับเลือกเบิกของ */
-    .store-container {
+    /* 2. ส่วนหน้าเลือกเบิกของ (ขยายเต็มหน้าจอ Full Screen) */
+    .store-layout {
       display: none;
-      width: 100%;
-      max-width: 900px;
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-      padding: 25px;
+      min-height: 100vh;
+      background: #f1f5f9;
+      flex-direction: column;
     }
-    .store-header {
+    .store-navbar {
+      background: white;
+      padding: 14px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+    .store-brand { font-size: 18px; font-weight: bold; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+    .emp-info-pill {
+      background: #e2e8f0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #334155;
+    }
+    .btn-logout {
+      margin-left: 10px;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .store-main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+    .toolbar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
       margin-bottom: 20px;
     }
-    .emp-badge {
-      background: #f1f5f9;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 13px;
+    .search-box {
+      width: 320px;
+      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
     }
-    .ppe-grid {
+
+    /* การ์ดอุปกรณ์ PPE แบบเต็มความกว้าง */
+    .ppe-grid-full {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 15px;
-      max-height: 55vh;
-      overflow-y: auto;
-      padding: 5px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
     }
     .ppe-card {
+      background: white;
       border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 14px;
+      border-radius: 10px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: 0.2s;
     }
-    .ppe-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: #1e293b;
-      margin-bottom: 8px;
+    .ppe-card:hover {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      border-color: #cbd5e1;
     }
-    .qty-box {
+    .ppe-id { font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px; }
+    .ppe-title { font-size: 14px; font-weight: bold; color: #1e293b; line-height: 1.4; margin-bottom: 12px; }
+
+    .qty-control {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-top: 10px;
-    }
-    .btn-qty {
-      width: 32px;
-      height: 32px;
-      border: 1px solid #cbd5e1;
       background: #f8fafc;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #f1f5f9;
     }
-    .qty-input {
-      width: 50px;
-      text-align: center;
-      padding: 5px;
+    .qty-btn {
+      width: 34px;
+      height: 34px;
+      background: white;
       border: 1px solid #cbd5e1;
-      border-radius: 4px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      color: #334155;
     }
-    .btn-confirm-all {
-      width: 100%;
+    .qty-btn:hover { background: #e2e8f0; }
+    .qty-field {
+      width: 60px;
+      text-align: center;
+      padding: 6px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: bold;
+      background: white;
+    }
+
+    /* แถบยึดปุ่มส่งคำขอด้านล่าง (Sticky Bottom Bar) */
+    .submit-bar {
+      position: sticky;
+      bottom: 20px;
+      background: white;
+      padding: 15px 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #cbd5e1;
+      margin-top: 20px;
+    }
+    .btn-send {
       background: #10b981;
       color: white;
       border: none;
-      padding: 14px;
-      font-size: 16px;
+      padding: 12px 28px;
+      font-size: 15px;
       font-weight: bold;
       border-radius: 8px;
       cursor: pointer;
-      margin-top: 20px;
+      transition: 0.2s;
     }
-    .btn-confirm-all:hover {
-      background: #059669;
-    }
+    .btn-send:hover { background: #059669; }
   </style>
 </head>
 <body>
 
-  <!-- การ์ดยืนยันตัวตนพนักงาน -->
-  <div class="login-card" id="loginCard">
-    <div class="icon-wrapper">
-      <span>⛑️</span>
-    </div>
-    <h2 class="app-title">PPE Stock Control</h2>
-    <p class="app-subtitle">ระบบเบิกจ่ายอุปกรณ์ความปลอดภัย (สำหรับพนักงาน)</p>
+  <!-- 1. หน้าจอ Login พนักงาน -->
+  <div class="login-wrapper" id="loginWrapper">
+    <div class="login-card">
+      <div class="icon-wrapper">
+        <span>⛑️</span>
+      </div>
+      <h2 class="app-title">PPE Stock Control</h2>
+      <p class="app-subtitle">ระบบเบิกจ่ายอุปกรณ์ความปลอดภัย (สำหรับพนักงาน)</p>
 
-    <!-- กล่องคำแนะนำรูปแบบรหัสพนักงาน -->
-    <div class="instruction-box">
-      <b>📌 คำแนะนำการระบุรหัสพนักงาน:</b>
-      <ul>
-        <li>รหัสพนักงาน TTT เช่น <b>20-000</b></li>
-        <li>รหัสพนักงาน Contract out เช่น <b>TTT-1000</b></li>
-      </ul>
-    </div>
+      <div class="instruction-box">
+        <b>📌 คำแนะนำการระบุรหัสพนักงาน:</b>
+        <ul>
+          <li>รหัสพนักงาน TTT เช่น <b>20-000</b></li>
+          <li>รหัสพนักงาน Contract out เช่น <b>TTT-1000</b></li>
+        </ul>
+      </div>
 
-    <div class="form-group">
-      <label class="form-label">รหัสประจำตัวพนักงาน</label>
-      <input type="text" id="empIdInput" class="form-input" placeholder="เช่น 20-000 หรือ TTT-1000" onkeypress="if(event.key === 'Enter') handleEmpLogin()">
-    </div>
+      <div class="form-group">
+        <label class="form-label">รหัสประจำตัวพนักงาน</label>
+        <input type="text" id="empIdInput" class="form-input" placeholder="เช่น 20-000 หรือ TTT-1000" onkeypress="if(event.key === 'Enter') handleEmpLogin()">
+      </div>
 
-    <button type="button" class="btn-submit" id="btnEmpLogin" onclick="handleEmpLogin()">เข้าสู่ระบบเบิกอุปกรณ์</button>
+      <button type="button" class="btn-submit" id="btnEmpLogin" onclick="handleEmpLogin()">เข้าสู่ระบบเบิกอุปกรณ์</button>
 
-    <div>
-      <a href="admin/login.html" class="admin-link">🔒 เข้าสู่ระบบผู้ดูแล (Admin Portal)</a>
+      <div>
+        <a href="admin/login.html" class="admin-link">🔒 เข้าสู่ระบบผู้ดูแล (Admin Portal)</a>
+      </div>
     </div>
   </div>
 
-  <!-- หน้าจอเบิกอุปกรณ์ -->
-  <div class="store-container" id="storeContainer">
-    <div class="store-header">
-      <div>
-        <h2 style="color: #0f172a; font-size: 18px;">📋 เลือกอุปกรณ์ PPE ที่ต้องการเบิก</h2>
-        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">เลือกจำนวนแล้วกดยืนยันคำขอเบิก</div>
+  <!-- 2. หน้าจอเลือกเบิกอุปกรณ์แบบเต็มหน้าจอ (Full Screen) -->
+  <div class="store-layout" id="storeLayout">
+    <header class="store-navbar">
+      <div class="store-brand">
+        <span>🦺</span> PPE Store - รายการเบิกอุปกรณ์
       </div>
-      <div class="emp-badge">
-        👤 <b id="lblEmpName">-</b> (<span id="lblEmpDept">-</span>)
-        <button onclick="logoutEmp()" style="margin-left: 8px; border: none; background: none; color: #ef4444; cursor: pointer; text-decoration: underline;">ออก</button>
+      <div class="emp-info-pill">
+        ผู้เบิก: <b id="lblEmpName">-</b> (<span id="lblEmpDept">-</span>)
+        <button class="btn-logout" onclick="logoutEmp()">ออกจากระบบ</button>
       </div>
-    </div>
+    </header>
 
-    <div class="ppe-grid" id="ppeGrid">
-      <div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 30px;">กำลังโหลดรายการอุปกรณ์...</div>
-    </div>
+    <main class="store-main">
+      <div class="toolbar-row">
+        <div>
+          <h2 style="font-size: 20px; color: #0f172a; margin-bottom: 4px;">📋 เลือกอุปกรณ์ PPE ที่ต้องการเบิก</h2>
+          <div style="font-size: 13px; color: #64748b;">ระบุจำนวนที่ต้องการ แล้วกดปุ่มส่งคำขอด้านล่าง</div>
+        </div>
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 ค้นหารหัส หรือชื่ออุปกรณ์..." oninput="filterGrid()">
+      </div>
 
-    <button type="button" class="btn-confirm-all" id="btnSubmitRequest" onclick="submitWithdrawal()">
-      📤 ส่งคำขอเบิกอุปกรณ์
-    </button>
+      <div class="ppe-grid-full" id="ppeGrid">
+        <div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">กำลังโหลดรายการอุปกรณ์...</div>
+      </div>
+
+      <!-- แถบลอยสำหรับยืนยันการส่งคำขอ -->
+      <div class="submit-bar">
+        <div>
+          <div style="font-size: 14px; font-weight: bold; color: #1e293b;">ยอดที่เลือกเบิก: <span id="summaryCount" style="color: #0284c7;">0</span> รายการ</div>
+          <div style="font-size: 12px; color: #64748b;">*หลังจากส่งคำขอ กรุณารับอุปกรณ์ที่ห้องคลังเพื่อให้อนุมัติตัดสต็อก</div>
+        </div>
+        <button type="button" class="btn-send" id="btnSubmitRequest" onclick="submitWithdrawal()">
+          📤 ส่งคำขอเบิกอุปกรณ์
+        </button>
+      </div>
+    </main>
   </div>
 
   <script>
@@ -290,8 +330,8 @@
             document.getElementById('lblEmpName').innerText = currentEmployee.name;
             document.getElementById('lblEmpDept').innerText = currentEmployee.department;
 
-            document.getElementById('loginCard').style.display = 'none';
-            document.getElementById('storeContainer').style.display = 'block';
+            document.getElementById('loginWrapper').style.display = 'none';
+            document.getElementById('storeLayout').style.display = 'flex';
             loadPPEList();
           } else {
             alert(res.message || "ไม่พบรหัสพนักงานนี้ในระบบ");
@@ -308,8 +348,8 @@
       currentEmployee = null;
       selectedQty = {};
       document.getElementById('empIdInput').value = '';
-      document.getElementById('storeContainer').style.display = 'none';
-      document.getElementById('loginCard').style.display = 'block';
+      document.getElementById('storeLayout').style.display = 'none';
+      document.getElementById('loginWrapper').style.display = 'flex';
     }
 
     function loadPPEList() {
@@ -318,7 +358,7 @@
         .then(res => {
           if (res.status === 'success') {
             ppeItems = res.data || [];
-            renderGrid();
+            renderGrid(ppeItems);
           }
         });
     }
@@ -327,35 +367,57 @@
       const cur = selectedQty[idx] || 0;
       const next = Math.max(0, cur + delta);
       selectedQty[idx] = next;
-      document.getElementById(`input_qty_${idx}`).value = next;
+      const inputEl = document.getElementById(`input_qty_${idx}`);
+      if (inputEl) inputEl.value = next;
+      updateSummary();
     }
 
     function setManualQty(idx, val) {
       selectedQty[idx] = Math.max(0, parseInt(val) || 0);
+      updateSummary();
     }
 
-    function renderGrid() {
+    function updateSummary() {
+      let count = 0;
+      for (const k in selectedQty) {
+        if (selectedQty[k] > 0) count++;
+      }
+      document.getElementById('summaryCount').innerText = count;
+    }
+
+    function filterGrid() {
+      const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+      const filtered = ppeItems.filter(item => 
+        item.id.toLowerCase().includes(keyword) || item.name.toLowerCase().includes(keyword)
+      );
+      renderGrid(filtered);
+    }
+
+    function renderGrid(list) {
       const grid = document.getElementById('ppeGrid');
       grid.innerHTML = '';
 
-      if (ppeItems.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #64748b;">ไม่มีรายการอุปกรณ์ในระบบ</div>';
+      if (!list || list.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">ไม่พบรายการอุปกรณ์</div>';
         return;
       }
 
-      ppeItems.forEach((item, idx) => {
+      list.forEach(item => {
+        const originalIndex = ppeItems.findIndex(p => p.id === item.id);
+        const qty = selectedQty[originalIndex] || 0;
+
         const card = document.createElement('div');
         card.className = 'ppe-card';
         card.innerHTML = `
           <div>
-            <div style="font-size: 11px; color: #64748b;">รหัส: ${item.id}</div>
-            <div class="ppe-name">${item.name}</div>
+            <div class="ppe-id">รหัส: ${item.id}</div>
+            <div class="ppe-title">${item.name}</div>
           </div>
-          <div class="qty-box">
-            <button type="button" class="btn-qty" onclick="changeQty(${idx}, -1)">-</button>
-            <input type="number" id="input_qty_${idx}" class="qty-input" value="0" min="0" onchange="setManualQty(${idx}, this.value)">
-            <button type="button" class="btn-qty" onclick="changeQty(${idx}, 1)">+</button>
-            <span style="font-size: 12px; color: #64748b;">${item.unit || 'ชิ้น'}</span>
+          <div class="qty-control">
+            <button type="button" class="qty-btn" onclick="changeQty(${originalIndex}, -1)">-</button>
+            <input type="number" id="input_qty_${originalIndex}" class="qty-field" value="${qty}" min="0" onchange="setManualQty(${originalIndex}, this.value)">
+            <button type="button" class="qty-btn" onclick="changeQty(${originalIndex}, 1)">+</button>
+            <span style="font-size: 13px; color: #64748b; margin-left: 4px;">${item.unit || 'ชิ้น'}</span>
           </div>
         `;
         grid.appendChild(card);
