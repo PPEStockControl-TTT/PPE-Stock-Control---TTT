@@ -40,17 +40,22 @@
 
     /* KPI Summary Cards */
     .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; margin-bottom: 20px; }
-    .kpi-card { background: white; border-radius: 8px; padding: 14px 16px; border-left: 4px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .kpi-card { background: white; border-radius: 8px; padding: 14px 16px; border-left: 4px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: 0.2s; }
     .kpi-card.c-blue { border-left-color: #3b82f6; }
     .kpi-card.c-green { border-left-color: #10b981; }
     .kpi-card.c-sky { border-left-color: #0284c7; }
     .kpi-card.c-yellow { border-left-color: #f59e0b; }
     .kpi-card.c-red { border-left-color: #ef4444; }
-    .kpi-title { font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 8px; }
+    
+    /* สไตล์สำหรับการ์ดที่กดได้ */
+    .kpi-clickable { cursor: pointer; user-select: none; }
+    .kpi-clickable:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.1); }
+
+    .kpi-title { font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
     .kpi-val { font-size: 22px; font-weight: 800; color: #0f172a; }
     .kpi-unit { font-size: 12px; font-weight: normal; color: #475569; }
 
-    /* Quick Action Menu (ย้ายขึ้นมาไว้ด้านบน) */
+    /* Quick Action Menu */
     .quick-title { font-size: 15px; font-weight: bold; color: #1e3a8a; margin: 0 0 10px 0; }
     .quick-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .quick-btn { display: block; text-decoration: none; color: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); transition: 0.2s; }
@@ -70,6 +75,54 @@
     td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; }
     tr:last-child td { border-bottom: none; }
     .badge-urgent { background: #fce7f3; color: #be185d; border: 1px solid #fbcfe8; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
+    .badge-outstock { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
+
+    /* Modal Pop-up */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(2px);
+    }
+    .modal-card {
+      background: white;
+      width: 100%;
+      max-width: 850px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 85vh;
+      animation: modalFade 0.2s ease-out;
+    }
+    @keyframes modalFade {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .modal-title { font-size: 16px; font-weight: bold; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .btn-close-modal {
+      background: none; border: none; font-size: 22px; line-height: 1; color: #64748b; cursor: pointer; padding: 0 4px;
+    }
+    .btn-close-modal:hover { color: #0f172a; }
+    .modal-body {
+      padding: 16px 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
   </style>
 </head>
 <body>
@@ -132,21 +185,36 @@
           <div class="kpi-title">ใกล้จุดสั่งซื้อ</div>
           <div class="kpi-val" id="kpiNearMin">0</div>
         </div>
-        <div class="kpi-card c-red">
-          <div class="kpi-title">ต้องสั่งซื้อด่วน</div>
+
+        <!-- 1. ต้องสั่งซื้อด่วน (กดแล้ว Pop up) -->
+        <div class="kpi-card c-red kpi-clickable" onclick="openUrgentModal()" title="คลิกเพื่อดูรายการที่ต้องสั่งซื้อด่วนทั้งหมด">
+          <div class="kpi-title">
+            <span>ต้องสั่งซื้อด่วน</span>
+            <span style="font-size: 13px;">🔍</span>
+          </div>
           <div class="kpi-val" id="kpiUrgentReorder" style="color: #ef4444;">0</div>
         </div>
-        <div class="kpi-card c-yellow">
-          <div class="kpi-title">รอดำเนินการจ่าย</div>
+
+        <!-- 2. รอดำเนินการจ่าย (กดแล้วเด้งไปหน้า pending.html) -->
+        <div class="kpi-card c-yellow kpi-clickable" onclick="window.location.href='pending.html'" title="คลิกเพื่อไปหน้าอนุมัติและเบิกจ่าย PPE">
+          <div class="kpi-title">
+            <span>รอดำเนินการจ่าย</span>
+            <span style="font-size: 13px;">➔</span>
+          </div>
           <div class="kpi-val" id="kpiPendingCount">0</div>
         </div>
-        <div class="kpi-card c-red">
-          <div class="kpi-title">สินค้าหมดสต็อก</div>
+
+        <!-- 3. สินค้าหมดสต็อก (กดแล้ว Pop up) -->
+        <div class="kpi-card c-red kpi-clickable" onclick="openOutStockModal()" title="คลิกเพื่อดูรายการสินค้าที่หมดสต็อกทั้งหมด">
+          <div class="kpi-title">
+            <span>สินค้าหมดสต็อก</span>
+            <span style="font-size: 13px;">🔍</span>
+          </div>
           <div class="kpi-val" id="kpiOutOfStock" style="color: #ef4444;">0</div>
         </div>
       </div>
 
-      <!-- เมนูด่วน 3 การ์ด (ย้ายขึ้นมาอยู่ตรงนี้) -->
+      <!-- เมนูด่วน 3 การ์ด -->
       <h3 class="quick-title">เมนูด่วน</h3>
       <div class="quick-row">
         <a href="restock.html" class="quick-btn b-blue">
@@ -187,8 +255,40 @@
     </main>
   </div>
 
+  <!-- หน้าต่าง Pop-up แสดงรายละเอียดรายการ -->
+  <div class="modal-overlay" id="detailModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalHeaderTitle">📋 รายละเอียดรายการ</h3>
+        <button type="button" class="btn-close-modal" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 120px;">รหัส PPE</th>
+                <th>ชื่ออุปกรณ์</th>
+                <th style="width: 110px; text-align: center;">คงเหลือ</th>
+                <th style="width: 110px; text-align: center;">สต็อกขั้นต่ำ</th>
+                <th style="width: 130px; text-align: center;">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="modalTableBody">
+              <!-- ข้อมูลจะถูกใส่ที่นี่ผ่าน JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
+
+    let rawStockList = [];
+    let urgentList = [];
+    let outStockList = [];
 
     window.onload = function() {
       loadDashboard();
@@ -217,23 +317,25 @@
         .then(res => res.json())
         .then(res => {
           if (res.status === 'success') {
-            const list = res.stockList || [];
+            rawStockList = res.stockList || [];
             
             let totalStock = 0;
             let nearMinCount = 0;
-            let urgentCount = 0;
-            let outOfStockCount = 0;
+            urgentList = [];
+            outStockList = [];
             const followItems = [];
 
-            list.forEach(item => {
+            rawStockList.forEach(item => {
               const bal = Number(item.balance) || 0;
               const min = Number(item.minStock) || 10;
               totalStock += bal;
 
-              if (bal === 0) outOfStockCount++;
+              if (bal === 0) {
+                outStockList.push(item);
+              }
               
               if (bal <= min) {
-                urgentCount++;
+                urgentList.push(item);
                 followItems.push({ ...item, status: 'สั่งซื้อด่วน' });
               } else if (bal <= min * 1.5) {
                 nearMinCount++;
@@ -242,12 +344,12 @@
             });
 
             // อัปเดตตัวเลขบนการ์ด
-            document.getElementById('kpiTotalItems').innerText = list.length;
+            document.getElementById('kpiTotalItems').innerText = rawStockList.length;
             document.getElementById('kpiTotalStock').innerText = formatNumber(totalStock);
             document.getElementById('kpiTotalValue').innerHTML = `${formatMoney(res.grandStockValue)} <span class="kpi-unit">บาท</span>`;
             document.getElementById('kpiNearMin').innerText = nearMinCount;
-            document.getElementById('kpiUrgentReorder').innerText = urgentCount;
-            document.getElementById('kpiOutOfStock').innerText = outOfStockCount;
+            document.getElementById('kpiUrgentReorder').innerText = urgentList.length;
+            document.getElementById('kpiOutOfStock').innerText = outStockList.length;
 
             // เรนเดอร์ตารางติดตาม
             renderUrgentTable(followItems);
@@ -284,6 +386,47 @@
         `;
         tbody.appendChild(tr);
       });
+    }
+
+    /* ฟังก์ชันเปิด Pop-up "ต้องสั่งซื้อด่วน" */
+    function openUrgentModal() {
+      document.getElementById('modalHeaderTitle').innerHTML = `🚨 รายการต้องสั่งซื้อด่วน (&le; สต็อกขั้นต่ำ) [${urgentList.length} รายการ]`;
+      renderModalTable(urgentList, 'สั่งซื้อด่วน', 'badge-urgent');
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    /* ฟังก์ชันเปิด Pop-up "สินค้าหมดสต็อก" */
+    function openOutStockModal() {
+      document.getElementById('modalHeaderTitle').innerHTML = `⚠️ รายการสินค้าหมดสต็อก (คงเหลือ 0) [${outStockList.length} รายการ]`;
+      renderModalTable(outStockList, 'หมดสต็อก', 'badge-outstock');
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    /* เรนเดอร์ข้อมูลลงใน Pop-up */
+    function renderModalTable(items, statusText, badgeClass) {
+      const tbody = document.getElementById('modalTableBody');
+      tbody.innerHTML = '';
+
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #10b981; padding: 30px;">ไม่มีรายการ 🎉</td></tr>';
+        return;
+      }
+
+      items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color: #64748b; font-weight: 600;">${item.id}</td>
+          <td><b>${item.name}</b></td>
+          <td style="text-align: center; font-weight: bold; color: #ef4444;">${item.balance}</td>
+          <td style="text-align: center; color: #475569;">${item.minStock || 10}</td>
+          <td style="text-align: center;"><span class="${badgeClass}">${statusText}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function closeModal() {
+      document.getElementById('detailModal').style.display = 'none';
     }
   </script>
 </body>
