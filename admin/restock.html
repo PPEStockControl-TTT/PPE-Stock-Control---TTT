@@ -89,6 +89,64 @@
       box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
     }
     .btn-save-all:hover { background: #059669; }
+
+    /* หน้าต่างแจ้งเตือนกึ่งกลางจอ (Custom Modal Alert/Confirm) */
+    .custom-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(3px);
+    }
+    .custom-modal-box {
+      background: white;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      text-align: center;
+      padding: 28px 24px;
+      animation: modalPop 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-icon-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 30px;
+      margin: 0 auto 16px auto;
+    }
+    .icon-warn { background: #fef3c7; color: #d97706; }
+    .icon-success { background: #dcfce7; color: #16a34a; }
+    .icon-error { background: #fee2e2; color: #dc2626; }
+    
+    .custom-modal-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    .custom-modal-text { font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 24px; }
+    
+    .modal-btn-row { display: flex; justify-content: center; gap: 12px; }
+    .modal-btn {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: 0.15s;
+    }
+    .btn-m-confirm { background: #3b82f6; color: white; }
+    .btn-m-confirm:hover { background: #2563eb; }
+    .btn-m-cancel { background: #f1f5f9; color: #475569; }
+    .btn-m-cancel:hover { background: #e2e8f0; }
   </style>
 </head>
 <body>
@@ -204,6 +262,18 @@
     </main>
   </div>
 
+  <!-- หน้าต่าง Pop-up แจ้งเตือนสวยงามอยู่ตรงกลางจอ -->
+  <div class="custom-modal-overlay" id="customAlertModal">
+    <div class="custom-modal-box">
+      <div class="modal-icon-circle" id="alertModalIcon">⚠️</div>
+      <div class="custom-modal-title" id="alertModalTitle">แจ้งเตือน</div>
+      <div class="custom-modal-text" id="alertModalText">ข้อความแจ้งเตือน</div>
+      <div class="modal-btn-row" id="alertModalBtnRow">
+        <button type="button" class="modal-btn btn-m-confirm" onclick="closeCustomAlert()">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
     let ppeList = [];
@@ -213,6 +283,67 @@
     window.onload = function() {
       loadPPEForRestock();
     };
+
+    /* ระบบแจ้งเตือน Custom Alert / Confirm ตรงกลางจอ */
+    let confirmCallback = null;
+
+    function showCustomAlert(title, text, type = 'warning') {
+      const modal = document.getElementById('customAlertModal');
+      const icon = document.getElementById('alertModalIcon');
+      const t = document.getElementById('alertModalTitle');
+      const msg = document.getElementById('alertModalText');
+      const btnRow = document.getElementById('alertModalBtnRow');
+
+      t.innerText = title;
+      msg.innerText = text;
+
+      if (type === 'warning') {
+        icon.className = 'modal-icon-circle icon-warn';
+        icon.innerText = '⚠️';
+      } else if (type === 'success') {
+        icon.className = 'modal-icon-circle icon-success';
+        icon.innerText = '✅';
+      } else if (type === 'error') {
+        icon.className = 'modal-icon-circle icon-error';
+        icon.innerText = '❌';
+      }
+
+      btnRow.innerHTML = '<button type="button" class="modal-btn btn-m-confirm" onclick="closeCustomAlert()">ตกลง</button>';
+      modal.style.display = 'flex';
+    }
+
+    function showCustomConfirm(title, text, onConfirm) {
+      const modal = document.getElementById('customAlertModal');
+      const icon = document.getElementById('alertModalIcon');
+      const t = document.getElementById('alertModalTitle');
+      const msg = document.getElementById('alertModalText');
+      const btnRow = document.getElementById('alertModalBtnRow');
+
+      t.innerText = title;
+      msg.innerText = text;
+      icon.className = 'modal-icon-circle icon-warn';
+      icon.innerText = '❓';
+
+      confirmCallback = onConfirm;
+
+      btnRow.innerHTML = `
+        <button type="button" class="modal-btn btn-m-cancel" onclick="closeCustomAlert()">ยกเลิก</button>
+        <button type="button" class="modal-btn btn-m-confirm" onclick="executeConfirm()">ยืนยัน</button>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function executeConfirm() {
+      closeCustomAlert();
+      if (typeof confirmCallback === 'function') {
+        confirmCallback();
+      }
+    }
+
+    function closeCustomAlert() {
+      document.getElementById('customAlertModal').style.display = 'none';
+      confirmCallback = null;
+    }
 
     function formatMoney(amount) {
       return Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -229,7 +360,6 @@
             
             ppeList.forEach((item) => {
               const opt = document.createElement('option');
-              // แสดงรหัสและชื่อเต็มชัดเจน
               opt.value = `[${item.id}] ${item.name}`;
               dataList.appendChild(opt);
             });
@@ -274,11 +404,11 @@
       const qty = parseInt(document.getElementById('inQty').value) || 0;
 
       if (!selectedItemObj) {
-        alert("กรุณาเลือกอุปกรณ์ PPE จากรายการค้นหา");
+        showCustomAlert("แจ้งเตือน", "กรุณาเลือกอุปกรณ์ PPE จากรายการค้นหา", "warning");
         return;
       }
       if (qty <= 0) {
-        alert("กรุณาระบุจำนวนที่รับเข้ามากกว่า 0");
+        showCustomAlert("แจ้งเตือน", "กรุณาระบุจำนวนที่รับเข้ามากกว่า 0", "warning");
         return;
       }
 
@@ -290,7 +420,6 @@
         subtotal: selectedItemObj.price * qty
       });
 
-      // ล้างค่าที่ฟอร์มเลือก
       document.getElementById('itemSearchInput').value = "";
       document.getElementById('inQty').value = "";
       selectedItemObj = null;
@@ -340,55 +469,53 @@
     function submitBatchRestock() {
       const poNumber = document.getElementById('poNumber').value.trim();
       const adminName = document.getElementById('adminName').value.trim();
-      const btn = document.getElementById('btnSaveBatch');
 
       if (!poNumber) {
-        alert("กรุณาระบุเลขที่ PO / Invoice");
+        showCustomAlert("แจ้งเตือนข้อมูล", "กรุณาระบุเลขที่ PO / Invoice", "warning");
         return;
       }
       if (!adminName) {
-        alert("กรุณาระบุชื่อผู้บันทึกตรวจรับของ");
+        showCustomAlert("แจ้งเตือนข้อมูล", "กรุณาระบุชื่อผู้บันทึกตรวจรับของ", "warning");
         return;
       }
       if (currentBatch.length === 0) {
-        alert("กรุณาเพิ่มรายการอุปกรณ์ลงบิลอย่างน้อย 1 รายการ");
+        showCustomAlert("แจ้งเตือนข้อมูล", "กรุณาเพิ่มรายการอุปกรณ์ลงบิลอย่างน้อย 1 รายการ", "warning");
         return;
       }
 
-      if (!confirm(`ยืนยันการบันทึกรับเข้าสต็อกจำนวน ${currentBatch.length} รายการ สำหรับบิล ${poNumber}?`)) {
-        return;
-      }
+      showCustomConfirm("ยืนยันการบันทึก", `ยืนยันการบันทึกรับเข้าสต็อกจำนวน ${currentBatch.length} รายการ สำหรับบิล ${poNumber}?`, function() {
+        const btn = document.getElementById('btnSaveBatch');
+        btn.disabled = true;
+        btn.innerText = "กำลังบันทึกข้อมูลเข้าคลัง...";
 
-      btn.disabled = true;
-      btn.innerText = "กำลังบันทึกข้อมูลเข้าคลัง...";
-
-      fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          type: 'RESTOCK_BATCH',
-          poNumber: poNumber,
-          adminName: adminName,
-          items: currentBatch
+        fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            type: 'RESTOCK_BATCH',
+            poNumber: poNumber,
+            adminName: adminName,
+            items: currentBatch
+          })
         })
-      })
-      .then(res => res.json())
-      .then(res => {
-        btn.disabled = false;
-        btn.innerText = "💾 บันทึกรับเข้าสต็อกทั้งหมด";
-        if (res.status === 'success') {
-          alert("✅ บันทึกรับเข้าสต็อกเรียบร้อยแล้ว!");
-          document.getElementById('poNumber').value = '';
-          currentBatch = [];
-          renderBatchTable();
-        } else {
-          alert("เกิดข้อผิดพลาด: " + res.message);
-        }
-      })
-      .catch(() => {
-        btn.disabled = false;
-        btn.innerText = "💾 บันทึกรับเข้าสต็อกทั้งหมด";
-        alert("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
+        .then(res => res.json())
+        .then(res => {
+          btn.disabled = false;
+          btn.innerText = "💾 บันทึกรับเข้าสต็อกทั้งหมด";
+          if (res.status === 'success') {
+            showCustomAlert("สำเร็จ", "✅ บันทึกรับเข้าสต็อกเรียบร้อยแล้ว!", "success");
+            document.getElementById('poNumber').value = '';
+            currentBatch = [];
+            renderBatchTable();
+          } else {
+            showCustomAlert("เกิดข้อผิดพลาด", res.message, "error");
+          }
+        })
+        .catch(() => {
+          btn.disabled = false;
+          btn.innerText = "💾 บันทึกรับเข้าสต็อกทั้งหมด";
+          showCustomAlert("ข้อผิดพลาด", "ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง", "error");
+        });
       });
     }
   </script>
