@@ -436,7 +436,10 @@
 
     function showStoreView() {
       document.getElementById('lblEmpName').innerText = currentEmployee.name;
-      document.getElementById('lblEmpDept').innerText = currentEmployee.department;
+      // แสดง แผนก / บริษัท (Company)
+      const compText = currentEmployee.company ? ` / ${currentEmployee.company}` : '';
+      document.getElementById('lblEmpDept').innerText = `${currentEmployee.department}${compText}`;
+
       document.getElementById('loginWrapper').style.display = 'none';
       document.getElementById('storeLayout').style.display = 'flex';
       loadPPEList();
@@ -586,6 +589,7 @@
         empId: currentEmployee.empId,
         name: currentEmployee.name,
         department: currentEmployee.department,
+        company: currentEmployee.company || 'Thai Tank Terminal',
         items: itemsToSubmit
       };
 
