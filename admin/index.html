@@ -140,7 +140,7 @@
   </header>
 
   <div class="app-wrapper">
-    <!-- แถบเมนูด้านซ้าย -->
+    <!-- แถบเมนูด้านซ้าย (เพิ่มเมนู รายงานประจำเดือน แล้ว) -->
     <aside class="sidebar">
       <div class="menu-title">เมนูหลัก</div>
       <a href="index.html" class="side-link active">📊 Dashboard</a>
@@ -148,6 +148,7 @@
       <a href="restock.html" class="side-link">📥 รับเข้าสต็อก</a>
       <a href="pending.html" class="side-link">📋 เบิกจ่าย PPE</a>
       <a href="history.html" class="side-link">📜 ประวัติรายการ</a>
+      <a href="report.html" class="side-link">📈 รายงานประจำเดือน</a>
       <a href="../index.html" class="side-link" style="margin-top: 20px; color: #0284c7;">🦺 หน้าเบิกพนักงาน</a>
     </aside>
 
@@ -202,7 +203,7 @@
           <div class="kpi-val" id="kpiUrgentReorder" style="color: #ef4444;">0</div>
         </div>
 
-        <!-- 3. รอดำเนินการจ่าย (กดแล้วเด้งไปหน้า pending.html) -->
+        <!-- 3. รอดำเนินการจ่าย (กดแล้วไปหน้า pending.html) -->
         <div class="kpi-card c-yellow kpi-clickable" onclick="window.location.href='pending.html'" title="คลิกเพื่อไปหน้าอนุมัติและเบิกจ่าย PPE">
           <div class="kpi-title">
             <span>รอดำเนินการจ่าย</span>
@@ -391,21 +392,18 @@
       });
     }
 
-    /* Pop-up: ใกล้จุดสั่งซื้อ */
     function openNearMinModal() {
       document.getElementById('modalHeaderTitle').innerHTML = `⚠️ รายการใกล้จุดสั่งซื้อ (&le; 1.5x สต็อกขั้นต่ำ) [${nearMinList.length} รายการ]`;
       renderModalTable(nearMinList, 'ใกล้จุดสั่งซื้อ', 'badge-nearmin', '#b45309');
       document.getElementById('detailModal').style.display = 'flex';
     }
 
-    /* Pop-up: ต้องสั่งซื้อด่วน */
     function openUrgentModal() {
       document.getElementById('modalHeaderTitle').innerHTML = `🚨 รายการต้องสั่งซื้อด่วน (&le; สต็อกขั้นต่ำ) [${urgentList.length} รายการ]`;
       renderModalTable(urgentList, 'สั่งซื้อด่วน', 'badge-urgent', '#ef4444');
       document.getElementById('detailModal').style.display = 'flex';
     }
 
-    /* Pop-up: สินค้าหมดสต็อก */
     function openOutStockModal() {
       document.getElementById('modalHeaderTitle').innerHTML = `⚠️ รายการสินค้าหมดสต็อก (คงเหลือ 0) [${outStockList.length} รายการ]`;
       renderModalTable(outStockList, 'หมดสต็อก', 'badge-outstock', '#ef4444');
