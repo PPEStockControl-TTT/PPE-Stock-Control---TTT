@@ -151,7 +151,7 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .search-box {
       width: 320px;
@@ -160,6 +160,34 @@
       border-radius: 8px;
       font-size: 14px;
       background: white;
+    }
+
+    /* แถบปุ่มหมวดหมู่ (Category Filter Bar) */
+    .category-filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .cat-pill {
+      padding: 7px 16px;
+      border-radius: 20px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: 0.2s;
+    }
+    .cat-pill:hover { background: #e2e8f0; }
+    .cat-pill.active {
+      background: #0284c7;
+      color: white;
+      border-color: #0284c7;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
     }
 
     /* Grid รายการอุปกรณ์ */
@@ -185,7 +213,6 @@
       border-color: #cbd5e1;
     }
     
-    /* กล่องรูปภาพอุปกรณ์ */
     .img-box {
       width: 100%;
       height: 160px;
@@ -208,6 +235,16 @@
       color: #cbd5e1;
     }
 
+    .ppe-category-tag {
+      display: inline-block;
+      font-size: 11px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
     .ppe-id { font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px; }
     .ppe-title { font-size: 14px; font-weight: bold; color: #1e293b; line-height: 1.4; margin-bottom: 12px; }
 
@@ -309,7 +346,6 @@
         <span>🦺</span> PPE Store - รายการเบิกอุปกรณ์
       </div>
       <div class="nav-user-actions">
-        <!-- ปุ่มกดไปหน้าประวัติการเบิก -->
         <a href="emp-history.html" class="btn-history-nav">📜 ประวัติการเบิกของฉัน</a>
         <div class="emp-info-pill">
           ผู้เบิก: <b id="lblEmpName">-</b> (<span id="lblEmpDept">-</span>)
@@ -327,10 +363,17 @@
         <input type="text" id="searchInput" class="search-box" placeholder="🔍 ค้นหารหัส หรือชื่ออุปกรณ์..." oninput="filterGrid()">
       </div>
 
+      <!-- แถบหมวดหมู่ (Categories Filter) -->
+      <div class="category-filter-bar" id="categoryFilterBar">
+        <button class="cat-pill active" onclick="selectCategory('ALL', this)">🌟 ทั้งหมด (All Items)</button>
+      </div>
+
+      <!-- รายการอุปกรณ์ PPE -->
       <div class="ppe-grid-full" id="ppeGrid">
         <div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">กำลังโหลดรายการอุปกรณ์...</div>
       </div>
 
+      <!-- แถบลอยสำหรับยืนยันคำขอด้านล่าง -->
       <div class="submit-bar">
         <div>
           <div style="font-size: 14px; font-weight: bold; color: #1e293b;">ยอดที่เลือกเบิก: <span id="summaryCount" style="color: #0284c7;">0</span> รายการ</div>
@@ -348,6 +391,7 @@
     let currentEmployee = null;
     let ppeItems = [];
     let selectedQty = {};
+    let selectedCategory = 'ALL';
 
     window.onload = function() {
       const savedEmp = sessionStorage.getItem("currentEmp");
@@ -413,9 +457,31 @@
         .then(res => {
           if (res.status === 'success') {
             ppeItems = res.data || [];
-            renderGrid(ppeItems);
+            buildCategoryTabs();
+            filterGrid();
           }
         });
+    }
+
+    function buildCategoryTabs() {
+      const bar = document.getElementById('categoryFilterBar');
+      bar.innerHTML = '<button class="cat-pill active" onclick="selectCategory(\'ALL\', this)">🌟 ทั้งหมด (All Items)</button>';
+
+      const categories = [...new Set(ppeItems.map(item => item.category).filter(Boolean))];
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'cat-pill';
+        btn.innerText = cat;
+        btn.onclick = () => selectCategory(cat, btn);
+        bar.appendChild(btn);
+      });
+    }
+
+    function selectCategory(cat, btn) {
+      selectedCategory = cat;
+      document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterGrid();
     }
 
     function changeQty(idx, delta) {
@@ -442,9 +508,11 @@
 
     function filterGrid() {
       const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
-      const filtered = ppeItems.filter(item => 
-        item.id.toLowerCase().includes(keyword) || item.name.toLowerCase().includes(keyword)
-      );
+      const filtered = ppeItems.filter(item => {
+        const matchKeyword = item.id.toLowerCase().includes(keyword) || item.name.toLowerCase().includes(keyword);
+        const matchCat = (selectedCategory === 'ALL') || (item.category === selectedCategory);
+        return matchKeyword && matchCat;
+      });
       renderGrid(filtered);
     }
 
@@ -453,7 +521,7 @@
       grid.innerHTML = '';
 
       if (!list || list.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">ไม่พบรายการอุปกรณ์</div>';
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">ไม่พบรายการอุปกรณ์ในหมวดหมู่นี้</div>';
         return;
       }
 
@@ -461,7 +529,6 @@
         const originalIndex = ppeItems.findIndex(p => p.id === item.id);
         const qty = selectedQty[originalIndex] || 0;
         
-        // รองรับทั้ง URL รูปภาพตรง และ Google Drive File ID
         let imgHtml = `<span class="no-img">🦺</span>`;
         if (item.imageId && String(item.imageId).trim() !== "") {
           const rawId = String(item.imageId).trim();
@@ -476,6 +543,7 @@
         card.innerHTML = `
           <div>
             <div class="img-box">${imgHtml}</div>
+            ${item.category ? `<span class="ppe-category-tag">${item.category}</span>` : ''}
             <div class="ppe-id">รหัส: ${item.id}</div>
             <div class="ppe-title">${item.name}</div>
           </div>
@@ -533,7 +601,7 @@
         if (res.status === 'success') {
           alert("✅ ส่งคำขอเบิกสำเร็จแล้ว! กรุณารอ Admin ตรวจสอบและกดจ่ายของ");
           selectedQty = {};
-          renderGrid(ppeItems);
+          filterGrid();
           updateSummary();
         } else {
           alert("เกิดข้อผิดพลาด: " + res.message);
