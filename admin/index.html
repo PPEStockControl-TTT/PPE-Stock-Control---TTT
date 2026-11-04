@@ -220,3 +220,243 @@
       <h3 class="quick-title">เมนูด่วน</h3>
       <div class="quick-row">
         <a href="restock.html" class="quick-btn b-blue">
+          <div class="quick-btn-h">📥 รับเข้า PPE</div>
+          <div class="quick-btn-sub">บันทึกเมื่อมีการรับอุปกรณ์เข้าคลัง</div>
+        </a>
+        <a href="pending.html" class="quick-btn b-green">
+          <div class="quick-btn-h">📋 เบิกจ่าย PPE</div>
+          <div class="quick-btn-sub">อนุมัติและบันทึกการแจกอุปกรณ์แก่พนักงาน</div>
+        </a>
+        <a href="history.html" class="quick-btn b-gold">
+          <div class="quick-btn-h">📦 ตรวจสอบสต็อก & ประวัติ</div>
+          <div class="quick-btn-sub">ดูรายการทั้งหมดและความเคลื่อนไหวล่าสุด</div>
+        </a>
+      </div>
+
+      <div class="panel-card">
+        <h3 class="panel-title">รายการสต็อกที่ต้องติดตาม</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 140px;">รหัส PPE</th>
+                <th>ชื่ออุปกรณ์</th>
+                <th style="width: 130px;">คงเหลือ</th>
+                <th style="width: 130px;">สต็อกขั้นต่ำ</th>
+                <th style="width: 140px; text-align: center;">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="urgentTableBody">
+              <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 25px;">กำลังโหลดข้อมูล...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Pop-up -->
+  <div class="modal-overlay" id="detailModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalHeaderTitle">📋 รายละเอียดรายการ</h3>
+        <button type="button" class="btn-close-modal" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 120px;">รหัส PPE</th>
+                <th>ชื่ออุปกรณ์</th>
+                <th style="width: 110px; text-align: center;">คงเหลือ</th>
+                <th style="width: 110px; text-align: center;">สต็อกขั้นต่ำ</th>
+                <th style="width: 130px; text-align: center;">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="modalTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxeUehBV0tc7MkAPDkgnJhH4RbrjToyV425SkhRvRAP7BL51e1pdYdYWmbY1sSznaJb/exec";
+
+    let rawStockList = [];
+    let urgentList = [];
+    let nearMinList = [];
+    let outStockList = [];
+
+    window.onload = function() {
+      loadDashboard();
+    };
+
+    function formatNumber(num) {
+      return Number(num || 0).toLocaleString('th-TH');
+    }
+
+    function formatMoney(num) {
+      return Number(num || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updateDateTime() {
+      const d = new Date();
+      const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('lastUpdateTime').innerText = `ข้อมูลอัปเดต ณ วันที่ ${dateStr} ${timeStr}`;
+    }
+
+    function loadDashboard() {
+      updateDateTime();
+
+      // 1. ดึงสถิติภาพรวมสต็อก
+      fetch(`${API_URL}?action=getAdminDashboardStats`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            rawStockList = res.stockList || [];
+            let totalStock = 0;
+            urgentList = [];
+            nearMinList = [];
+            outStockList = [];
+            const followItems = [];
+
+            rawStockList.forEach(item => {
+              const bal = Number(item.balance) || 0;
+              const min = Number(item.minStock) || 10;
+              totalStock += bal;
+
+              if (bal === 0) outStockList.push(item);
+              
+              if (bal <= min) {
+                urgentList.push(item);
+                followItems.push({ ...item, status: 'สั่งซื้อด่วน' });
+              } else if (bal <= min * 1.5) {
+                nearMinList.push(item);
+                followItems.push({ ...item, status: 'ใกล้จุดสั่งซื้อ' });
+              }
+            });
+
+            document.getElementById('kpiTotalItems').innerText = rawStockList.length;
+            document.getElementById('kpiTotalStock').innerText = formatNumber(totalStock);
+            document.getElementById('kpiTotalValue').innerHTML = `${formatMoney(res.grandStockValue)} <span class="kpi-unit">บาท</span>`;
+            document.getElementById('kpiNearMin').innerText = nearMinList.length;
+            document.getElementById('kpiUrgentReorder').innerText = urgentList.length;
+            document.getElementById('kpiOutOfStock').innerText = outStockList.length;
+
+            renderUrgentTable(followItems);
+          }
+        });
+
+      // 2. ดึงจำนวนรอจ่าย
+      fetch(`${API_URL}?action=getPendingRequests`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            document.getElementById('kpiPendingCount').innerText = res.data ? res.data.length : 0;
+          }
+        });
+
+      // 3. ดึงประวัติธุรกรรมเพื่อคำนวณ ยอดรับเข้าทั้งปี และ ยอดรับเข้าประจำเดือน
+      fetch(`${API_URL}?action=getAllTransactions`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            const list = res.data || [];
+            const now = new Date();
+            const currentYearStr = String(now.getFullYear());
+            const currentMonthStr = String(now.getMonth() + 1).padStart(2, '0');
+
+            let yearInVal = 0;
+            let monthInVal = 0;
+
+            list.forEach(row => {
+              if (row.type === 'IN') {
+                const val = Number(row.totalPrice) || 0;
+                const dateParts = String(row.date).split(' ')[0].split('/');
+                if (dateParts.length === 3) {
+                  const rMonth = dateParts[1];
+                  const rYear = dateParts[2];
+                  if (rYear === currentYearStr) {
+                    yearInVal += val;
+                    if (rMonth === currentMonthStr) {
+                      monthInVal += val;
+                    }
+                  }
+                }
+              }
+            });
+
+            document.getElementById('kpiMonthlyInValue').innerHTML = `${formatMoney(monthInVal)} <span class="kpi-unit">บาท</span>`;
+            document.getElementById('kpiYearlyInValue').innerHTML = `${formatMoney(yearInVal)} <span class="kpi-unit">บาท</span>`;
+          }
+        });
+    }
+
+    function renderUrgentTable(items) {
+      const tbody = document.getElementById('urgentTableBody');
+      tbody.innerHTML = '';
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #10b981; padding: 25px;">สต็อกทุกรายการอยู่ในระดับปลอดภัย 🎉</td></tr>';
+        return;
+      }
+      items.forEach(item => {
+        const tr = document.createElement('tr');
+        const isUrgent = item.status === 'สั่งซื้อด่วน';
+        tr.innerHTML = `
+          <td style="color: #64748b; font-weight: 600;">${item.id}</td>
+          <td><b>${item.name}</b></td>
+          <td style="font-weight: bold; color: ${item.balance <= 0 ? '#ef4444' : '#1e293b'};">${item.balance} ชิ้น</td>
+          <td>${item.minStock || 10}</td>
+          <td style="text-align: center;"><span class="${isUrgent ? 'badge-urgent' : 'badge-nearmin'}">${item.status}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openNearMinModal() {
+      document.getElementById('modalHeaderTitle').innerHTML = `⚠️ รายการใกล้จุดสั่งซื้อ [${nearMinList.length} รายการ]`;
+      renderModalTable(nearMinList, 'ใกล้จุดสั่งซื้อ', 'badge-nearmin', '#b45309');
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function openUrgentModal() {
+      document.getElementById('modalHeaderTitle').innerHTML = `🚨 รายการต้องสั่งซื้อด่วน [${urgentList.length} รายการ]`;
+      renderModalTable(urgentList, 'สั่งซื้อด่วน', 'badge-urgent', '#ef4444');
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function openOutStockModal() {
+      document.getElementById('modalHeaderTitle').innerHTML = `⚠️ รายการสินค้าหมดสต็อก [${outStockList.length} รายการ]`;
+      renderModalTable(outStockList, 'หมดสต็อก', 'badge-outstock', '#ef4444');
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function renderModalTable(items, statusText, badgeClass, qtyColor) {
+      const tbody = document.getElementById('modalTableBody');
+      tbody.innerHTML = '';
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #10b981; padding: 30px;">ไม่มีรายการ 🎉</td></tr>';
+        return;
+      }
+      items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color: #64748b; font-weight: 600;">${item.id}</td>
+          <td><b>${item.name}</b></td>
+          <td style="text-align: center; font-weight: bold; color: ${qtyColor};">${item.balance}</td>
+          <td style="text-align: center; color: #475569;">${item.minStock || 10}</td>
+          <td style="text-align: center;"><span class="${badgeClass}">${statusText}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function closeModal() {
+      document.getElementById('detailModal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
